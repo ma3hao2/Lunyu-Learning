@@ -39,11 +39,6 @@ const VerseDetailPage: React.FC = () => {
     setMyNotes(progress.myNotes.filter(n => n.verseId === verseId));
   }, [verseId]);
 
-  // 页面显示时刷新笔记（从写心得页面返回后也能看到最新笔记）
-  useDidShow(() => {
-    refreshNotes();
-  });
-
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -199,12 +194,9 @@ const VerseDetailPage: React.FC = () => {
     }
   }, []);
 
-  const handleInsightClick = useCallback((noteId: string) => {
-    const note = relatedNotes.find(n => n.id === noteId);
-    if (note) {
-      Taro.navigateTo({ url: `/packageContent/pages/verseDetail/index?id=${note.verseId}` });
-    }
-  }, [relatedNotes]);
+  const handleInsightClick = useCallback((_noteId: string) => {
+    // 相关心得即当前章句的公开心得，点击无需跳转（避免同页自引用堆叠页面栈）
+  }, []);
 
   if (loading || !verse) {
     return (

@@ -1,5 +1,6 @@
 import Taro from '@tarojs/taro';
 import { UserInfo, LearningProgress, SyncResult, PublishedNote } from '@/types';
+import { clearPendingSync } from '@/utils/storage';
 
 const USER_KEY = 'lunyu_user';
 const isWeapp = process.env.TARO_ENV === 'weapp';
@@ -37,6 +38,8 @@ export function isLoggedIn(): boolean {
 
 // 退出登录
 export function logout(): void {
+  // 先清理待执行的云端同步定时器，防止旧用户进度上传到新用户云端（跨用户数据串写）
+  clearPendingSync();
   try {
     Taro.removeStorageSync(USER_KEY);
   } catch (e) {

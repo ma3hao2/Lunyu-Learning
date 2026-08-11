@@ -40,6 +40,7 @@ function triggerCloudSync(): void {
 
   if (syncTimer) clearTimeout(syncTimer);
   syncTimer = setTimeout(async () => {
+    syncTimer = null;
     try {
       const progress = getProgress();
       await uploadProgress(progress);
@@ -47,6 +48,14 @@ function triggerCloudSync(): void {
       console.warn('[Storage] 云端同步失败（静默）:', e);
     }
   }, 3000);
+}
+
+// 清理待执行的云端同步定时器（登出/切换用户时调用，防止旧用户数据上传到新用户云端）
+export function clearPendingSync(): void {
+  if (syncTimer) {
+    clearTimeout(syncTimer);
+    syncTimer = null;
+  }
 }
 
 // 获取今天日期字符串 (YYYY-MM-DD，按本地时区，避免 toISOString 的 UTC 偏移导致凌晨跨日误判)

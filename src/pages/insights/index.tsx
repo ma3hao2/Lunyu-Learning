@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, Input, ScrollView } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
@@ -20,19 +20,28 @@ const InsightsPage: React.FC = () => {
 
   const debouncedSearchText = useDebounce(searchText, 300);
 
+  // 请求序号：防止快速切换关键词时旧请求覆盖新结果（竞态保护）
+  const reqSeqRef = useRef(0);
+  // 首屏初始化标记：避免 useEffect 与 useDidShow 首次双发请求
+  const initedRef = useRef(false);
+
   // 拉取公开心得列表（关键词搜索由云函数 RegExp 处理）
   const loadNotes = useCallback(async (keyword = '', skip = 0, append = false) => {
+    const seq = ++reqSeqRef.current;
     try {
       const { list, hasMore: more } = await fetchPublishedNotes({
         skip,
         limit: PAGE_SIZE,
         keyword: keyword || undefined
       });
+      // 丢弃过期请求的结果（期间已发起新的搜索/翻页）
+      if (seq !== reqSeqRef.current) return;
       setNotes(prev => append ? [...prev, ...list] : list);
       setHasMore(more);
       setLoading(false);
       setRefreshing(false);
     } catch (e) {
+      if (seq !== reqSeqRef.current) return;
       console.error('[Insights] 加载公开心得失败:', e);
       setLoading(false);
       setRefreshing(false);
@@ -46,7 +55,12 @@ const InsightsPage: React.FC = () => {
   }, [debouncedSearchText, loadNotes]);
 
   // tabBar 页每次显示时刷新：跨页点赞/编辑后回到本页能拉到最新数据
+  // 首屏跳过（useEffect 已触发），避免首次挂载双发请求
   useDidShow(() => {
+    if (!initedRef.current) {
+      initedRef.current = true;
+      return;
+    }
     loadNotes(debouncedSearchText.trim(), 0, false);
   });
 
@@ -144,7 +158,7 @@ const InsightsPage: React.FC = () => {
               />
             ))}
           </View>
-          {hasMore && <Text className={styles.tip}>下滑加载更多</Text>}
+          {hasMore && <Text className={styles.tip}>{refreshing ? '加载中...' : '下滑加载更多'}</Text>}
           {!hasMore && notes.length > PAGE_SIZE && <Text className={styles.tip}>已全部加载</Text>}
         </>
       ) : (
