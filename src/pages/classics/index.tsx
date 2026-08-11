@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, Input, ScrollView } from '@tarojs/components';
+import type { InputProps, CommonEventFunction } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
@@ -105,7 +106,7 @@ const ClassicsPage: React.FC = () => {
     Taro.navigateTo({ url: `/packageContent/pages/verseDetail/index?id=${verseId}` });
   }, []);
 
-  const handleSearchInput = useCallback((e: any) => {
+  const handleSearchInput = useCallback((e: CommonEventFunction<InputProps.inputEventDetail>) => {
     setSearchText(e.detail.value);
   }, []);
 

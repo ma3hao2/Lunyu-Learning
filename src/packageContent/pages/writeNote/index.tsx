@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Textarea, Input, Switch } from '@tarojs/components';
+import type { InputProps, TextareaProps, CommonEventFunction } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
@@ -71,7 +72,7 @@ const WriteNotePage: React.FC = () => {
   const presetTags = ['修身', '学习', '处世', '教育', '管理'];
   const [tagInput, setTagInput] = useState('');
 
-  const handleContentInput = (e: any) => {
+  const handleContentInput = (e: CommonEventFunction<TextareaProps.onInputEventDetail>) => {
     const val = e.detail.value;
     contentRef.current = val;  // ref 即时同步
     setContent(val);           // state 异步更新（驱动重渲染）

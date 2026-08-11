@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, Input, ScrollView } from '@tarojs/components';
+import type { InputProps, CommonEventFunction } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { chapters } from '@/data/chapters';
@@ -18,10 +19,13 @@ const SearchPage: React.FC = () => {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [dataReady, setDataReady] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   // 已显示的搜索结果条数（点击显示全部）
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
   // 深度搜索请求序号：连续输入时只采纳最后一次请求的结果，防止旧请求覆盖新结果
   const searchSeqRef = useRef(0);
+  // 重试计数：变化时重新触发预加载
+  const [retryTick, setRetryTick] = useState(0);
 
   const debouncedSearchText = useDebounce(searchText, 300);
 
@@ -29,6 +33,7 @@ const SearchPage: React.FC = () => {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setLoadFailed(false);
     (async () => {
       try {
         await loadAllVerses();
@@ -40,12 +45,13 @@ const SearchPage: React.FC = () => {
         console.error('[Search] 加载章节数据失败:', e);
         if (!cancelled) {
           setLoading(false);
-          Taro.showToast({ title: '加载失败', icon: 'none' });
+          setLoadFailed(true);
+          Taro.showToast({ title: '加载失败，请重试', icon: 'none' });
         }
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [retryTick]);
 
   // 深度搜索译文+注释（复用 deepSearch.ts，避免逻辑重复）
   useEffect(() => {
@@ -67,7 +73,7 @@ const SearchPage: React.FC = () => {
     return () => { cancelled = true; };
   }, [debouncedSearchText, dataReady]);
 
-  const handleSearchInput = useCallback((e: any) => {
+  const handleSearchInput = useCallback((e: CommonEventFunction<InputProps.inputEventDetail>) => {
     setSearchText(e.detail.value);
   }, []);
 
@@ -105,7 +111,12 @@ const SearchPage: React.FC = () => {
       </View>
 
       {/* 状态提示 */}
-      {loading ? (
+      {loadFailed ? (
+        <View className={styles.tipWrap}>
+          <Text className={styles.tip}>章节数据加载失败，请检查网络</Text>
+          <Text className={styles.retryBtn} onClick={() => setRetryTick(t => t + 1)}>重试</Text>
+        </View>
+      ) : loading ? (
         <Text className={styles.tip}>正在加载章节数据...</Text>
       ) : isSearching ? (
         <Text className={styles.tip}>找到 {results.length} 条匹配</Text>
