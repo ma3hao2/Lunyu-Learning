@@ -1,6 +1,6 @@
 import { Chapter } from '@/types';
 
-// 论语二十篇（分章依据：公开数据，共512章）
+// 论语二十篇（分章依据：和合文化屋公众号，共509章句）
 export const chapters: Chapter[] = [
   { id: 1, title: '学而第一', subTitle: '学而', verseCount: 16, theme: '学习修身', description: '论述学习态度、方法及个人修养，强调"学而时习之"的为学精神。' },
   { id: 2, title: '为政第二', subTitle: '为政', verseCount: 24, theme: '为政治国', description: '论述德政理念与治国之道，提出"为政以德"的核心思想。' },
