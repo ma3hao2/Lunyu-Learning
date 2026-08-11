@@ -143,13 +143,17 @@ function mergeProgress(cloudProgress, localProgress) {
         : localProgress.lastReadDate)
     : (cloudProgress.lastReadDate || localProgress.lastReadDate);
 
+  // 裁剪无界增长的标记数组：超过阈值时只保留最新的条目，避免文档体积膨胀
+  const TRIM_THRESHOLD = 200;
+  const trimArray = (arr) => (arr && arr.length > TRIM_THRESHOLD) ? arr.slice(-TRIM_THRESHOLD) : arr;
+
   return {
     readVerseIds,
     myNotes,
     totalReadDays,
     lastReadDate,
-    deletedNoteIds,
-    likedNoteIds,
-    unlikedNoteIds
+    deletedNoteIds: trimArray(deletedNoteIds),
+    likedNoteIds: trimArray(likedNoteIds),
+    unlikedNoteIds: trimArray(unlikedNoteIds)
   };
 }

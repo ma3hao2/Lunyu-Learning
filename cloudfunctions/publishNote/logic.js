@@ -29,8 +29,14 @@ async function listNotes(db, params) {
   if (verseId) query.verseId = verseId;
   if (tag) query.tags = tag;
   // 关键词搜索（用 RegExp 做内容模糊匹配）
+  // 转义正则元字符防止 ReDoS / 正则注入，限制长度避免长串回溯消耗
   if (keyword) {
-    query.content = db.RegExp({ regexp: keyword, options: 'i' });
+    const safeKeyword = String(keyword)
+      .slice(0, 30)
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (safeKeyword) {
+      query.content = db.RegExp({ regexp: safeKeyword, options: 'i' });
+    }
   }
 
   const res = await db.collection('notes')
@@ -72,6 +78,9 @@ async function listNotes(db, params) {
 
 /**
  * 点赞（同一用户对同一笔记只能赞一次）
+ * 注意：check-then-add 非原子，并发点赞可能重复计数。
+ * 需在云开发控制台为 notes_likes 建立 (noteId, _openid) 复合唯一索引兜底，
+ * add 冲突时幂等返回不重复 inc。
  * notes_likes 集合未创建时返回可操作提示，避免未捕获异常导致整个云函数失败
  */
 async function likeNote(db, openId, noteId) {
@@ -92,9 +101,16 @@ async function likeNote(db, openId, noteId) {
   if (existed.length > 0) {
     return { code: 0, message: '已点赞过' };
   }
-  await db.collection('notes_likes').add({
-    data: { noteId, _openid: openId, createTime: db.serverDate() }
-  });
+  // add 可能因唯一索引冲突失败（并发点赞），冲突时幂等返回不重复计数
+  try {
+    await db.collection('notes_likes').add({
+      data: { noteId, _openid: openId, createTime: db.serverDate() }
+    });
+  } catch (e) {
+    // 唯一键冲突 = 已被并发点赞，幂等返回
+    console.warn('[likeNote] 并发点赞冲突（幂等返回）:', e.message);
+    return { code: 0, message: '已点赞过' };
+  }
   await db.collection('notes').doc(noteId).update({
     data: { likeCount: _.inc(1) }
   });

@@ -13,6 +13,7 @@ import {
   getFieldLabel,
   type SearchResult
 } from '@/services/search';
+import { renderHighlighted } from '@/utils/highlight';
 
 const PAGE_SIZE = 20; // 下滑加载每页条数
 
@@ -188,12 +189,12 @@ const ClassicsPage: React.FC = () => {
                 </View>
                 {/* 原文展示 */}
                 <Text className={styles.resultOriginal} selectable>
-                  {renderHighlighted(result.original, debouncedSearchText)}
+                  {renderHighlighted(result.original, debouncedSearchText, styles.highlight)}
                 </Text>
                 {/* 匹配上下文预览（非原文命中时展示） */}
                 {result.previewField !== 'original' && (
                   <Text className={styles.resultPreview} selectable>
-                    {renderHighlighted(result.previewText, debouncedSearchText)}
+                    {renderHighlighted(result.previewText, debouncedSearchText, styles.highlight)}
                   </Text>
                 )}
               </View>
@@ -248,20 +249,5 @@ const ClassicsPage: React.FC = () => {
     </ScrollView>
   );
 };
-
-// 高亮匹配文本：拆分为片段数组，每段都用 Text 包裹（避免数组混合字符串与元素导致 Taro 调和器报错）
-function renderHighlighted(text: string, keyword: string): React.ReactNode {
-  const kw = (keyword || '').trim();
-  if (!kw || !text) return text;
-  const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(`(${escaped})`, 'g');
-  const parts = text.split(regex);
-  return parts.map((part, i) => {
-    if (part === kw) {
-      return <Text key={i} className={styles.highlight}>{part}</Text>;
-    }
-    return <Text key={i}>{part}</Text>;
-  });
-}
 
 export default ClassicsPage;

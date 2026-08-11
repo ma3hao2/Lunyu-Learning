@@ -26,28 +26,39 @@ exports.main = async (event, context) => {
     }
 
     // 默认：登录/注册
+    // 以 openId 作为文档 _id 做 upsert，天然唯一，消除并发创建竞态
     const usersCol = db.collection('users');
-    const existing = await usersCol.where({ _openid: openId }).get();
-
     let userInfo;
-    if (existing.data.length > 0) {
+
+    try {
+      // 优先按 _id = openId 查询（新数据）
+      const docRes = await usersCol.doc(openId).get();
+      userInfo = docRes.data;
       // 已有用户，更新登录时间
-      userInfo = existing.data[0];
-      await usersCol.doc(userInfo._id).update({
+      await usersCol.doc(openId).update({
         data: { loginTime: db.serverDate() }
       });
-    } else {
-      // 新用户，创建记录
-      const newUser = {
-        _openid: openId,
-        nickName: '论语学习者',
-        avatarUrl: '',
-        gender: 0,
-        loginTime: db.serverDate(),
-        createTime: db.serverDate()
-      };
-      const addRes = await usersCol.add({ data: newUser });
-      userInfo = { _id: addRes._id, ...newUser };
+    } catch (e) {
+      // doc(openId).get() 不存在时抛错 -> 新用户或老数据（_id 非 openId）
+      // 先按 _openid 查老数据（兼容历史记录）
+      const legacy = await usersCol.where({ _openid: openId }).get();
+      if (legacy.data.length > 0) {
+        userInfo = legacy.data[0];
+        await usersCol.doc(userInfo._id).update({
+          data: { loginTime: db.serverDate() }
+        });
+      } else {
+        // 新用户，以 openId 为 _id 创建（set 幂等：即使并发也只创建一条）
+        const newUser = {
+          nickName: '论语学习者',
+          avatarUrl: '',
+          gender: 0,
+          loginTime: db.serverDate(),
+          createTime: db.serverDate()
+        };
+        await usersCol.doc(openId).set({ data: newUser });
+        userInfo = { _id: openId, _openid: openId, ...newUser };
+      }
     }
 
     return {

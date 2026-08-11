@@ -123,7 +123,20 @@ export function mergeProgress(local: LearningProgress, cloud: LearningProgress):
   const lastReadDate = (local.lastReadDate && cloud.lastReadDate)
     ? (local.lastReadDate > cloud.lastReadDate ? local.lastReadDate : cloud.lastReadDate)
     : (local.lastReadDate || cloud.lastReadDate);
-  return { readVerseIds, myNotes, totalReadDays, lastReadDate, deletedNoteIds, likedNoteIds, unlikedNoteIds };
+
+  // 裁剪无界增长的标记数组：超过阈值时只保留最新的条目，避免逼近 storage 10MB 上限
+  const TRIM_THRESHOLD = 200;
+  const trimArray = (arr: string[] | number[]) => arr.length > TRIM_THRESHOLD ? arr.slice(-TRIM_THRESHOLD) : arr;
+
+  return {
+    readVerseIds,
+    myNotes,
+    totalReadDays,
+    lastReadDate,
+    deletedNoteIds: trimArray(deletedNoteIds) as number[],
+    likedNoteIds: trimArray(likedNoteIds) as string[],
+    unlikedNoteIds: trimArray(unlikedNoteIds) as string[]
+  };
 }
 
 // 判断进度是否有实质数据

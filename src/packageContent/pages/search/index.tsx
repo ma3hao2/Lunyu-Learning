@@ -6,23 +6,9 @@ import { chapters } from '@/data/chapters';
 import { loadAllVerses } from '@/data/versesLoader';
 import { useDebounce } from '@/hooks/useDebounce';
 import { searchDeep, getFieldLabel, type SearchResult } from '@/packageContent/services/deepSearch';
+import { renderHighlighted } from '@/utils/highlight';
 
 const PAGE_SIZE = 20; // 每页显示条数
-
-// 高亮匹配文本
-function renderHighlighted(text: string, keyword: string): React.ReactNode {
-  const kw = (keyword || '').trim();
-  if (!kw || !text) return text;
-  const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(`(${escaped})`, 'g');
-  const parts = text.split(regex);
-  return parts.map((part, i) => {
-    if (part === kw) {
-      return <Text key={i} className={styles.highlight}>{part}</Text>;
-    }
-    return <Text key={i}>{part}</Text>;
-  });
-}
 
 const SearchPage: React.FC = () => {
   const router = useRouter();
@@ -148,7 +134,7 @@ const SearchPage: React.FC = () => {
                 </View>
                 <Text className={styles.resultOriginal}>{result.original}</Text>
                 <Text className={styles.resultPreview}>
-                  {renderHighlighted(result.previewText, debouncedSearchText)}
+                  {renderHighlighted(result.previewText, debouncedSearchText, styles.highlight)}
                 </Text>
               </View>
             );
