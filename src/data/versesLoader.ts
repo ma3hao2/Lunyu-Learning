@@ -12,7 +12,7 @@ export async function loadChapter(chapterId: number): Promise<Verse[]> {
   if (chapterCache.has(chapterId)) {
     return chapterCache.get(chapterId)!;
   }
-  let module: any;
+  let module: Record<string, Verse[]> | undefined;
   switch (chapterId) {
     case 1: module = await import('./verses/chapter1'); break;
     case 2: module = await import('./verses/chapter2'); break;
@@ -36,7 +36,8 @@ export async function loadChapter(chapterId: number): Promise<Verse[]> {
     case 20: module = await import('./verses/chapter20'); break;
     default: return [];
   }
-  const verses = module[`chapter${chapterId}Verses`] as Verse[];
+  const verses = module?.[`chapter${chapterId}Verses`] as Verse[] | undefined;
+  if (!verses) return [];
   chapterCache.set(chapterId, verses);
   return verses;
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, Input, ScrollView } from '@tarojs/components';
-import type { InputProps, CommonEventFunction } from '@tarojs/components';
+import type { InputProps, BaseEventOrig } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { chapters } from '@/data/chapters';
@@ -73,7 +73,7 @@ const SearchPage: React.FC = () => {
     return () => { cancelled = true; };
   }, [debouncedSearchText, dataReady]);
 
-  const handleSearchInput = useCallback((e: CommonEventFunction<InputProps.inputEventDetail>) => {
+  const handleSearchInput = useCallback((e: BaseEventOrig<InputProps.inputEventDetail>) => {
     setSearchText(e.detail.value);
   }, []);
 

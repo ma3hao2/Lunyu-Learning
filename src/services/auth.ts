@@ -198,13 +198,24 @@ function mockLogin(): UserInfo {
 // 公开心得（社区）
 // ============================================
 
+// publishNote 云函数统一响应结构
+interface CloudNoteResult {
+  code: number;
+  message: string;
+  data?: {
+    id?: string;
+    list?: PublishedNote[];
+    hasMore?: boolean;
+  };
+}
+
 // 调用 publishNote 云函数的通用封装
-async function callPublishNote(action: string, data: Record<string, any> = {}) {
+async function callPublishNote(action: string, data: Record<string, any> = {}): Promise<CloudNoteResult> {
   const res = await Taro.cloud.callFunction({
     name: 'publishNote',
     data: { action, ...data }
   });
-  const result = res.result as { code: number; message: string; data?: any };
+  const result = res.result as CloudNoteResult;
   if (result.code !== 0) {
     throw new Error(result.message || '操作失败');
   }
@@ -225,7 +236,9 @@ export async function publishNote(params: {
     ...params,
     authorName: user?.nickName || '论语学习者'
   });
-  return result.data.id;
+  const id = result.data?.id;
+  if (!id) throw new Error('发布失败，请重试');
+  return id;
 }
 
 /** 取消发布（删除云端文档）*/
@@ -250,7 +263,10 @@ export async function fetchPublishedNotes(options: {
 } = {}): Promise<{ list: PublishedNote[]; hasMore: boolean }> {
   if (!isWeapp) return { list: [], hasMore: false };
   const result = await callPublishNote('list', options);
-  return result.data;
+  return {
+    list: result.data?.list ?? [],
+    hasMore: result.data?.hasMore ?? false
+  };
 }
 
 /** 点赞公开心得 */
