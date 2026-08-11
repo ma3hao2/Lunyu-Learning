@@ -124,6 +124,12 @@ export function mergeProgress(local: LearningProgress, cloud: LearningProgress):
     ? (local.lastReadDate > cloud.lastReadDate ? local.lastReadDate : cloud.lastReadDate)
     : (local.lastReadDate || cloud.lastReadDate);
 
+  // 最后阅读位置：跟随「最后学习日期」较新的一侧（与 lastReadDate 同源）
+  const newerSide = (local.lastReadDate && cloud.lastReadDate)
+    ? (local.lastReadDate > cloud.lastReadDate ? local : cloud)
+    : (local.lastReadDate ? local : cloud);
+  const lastReadVerseId = newerSide.lastReadVerseId;
+
   // 裁剪无界增长的标记数组：超过阈值时只保留最新的条目，避免逼近 storage 10MB 上限
   const TRIM_THRESHOLD = 200;
   const trimArray = (arr: string[] | number[]) => arr.length > TRIM_THRESHOLD ? arr.slice(-TRIM_THRESHOLD) : arr;
@@ -133,6 +139,7 @@ export function mergeProgress(local: LearningProgress, cloud: LearningProgress):
     myNotes,
     totalReadDays,
     lastReadDate,
+    lastReadVerseId,
     deletedNoteIds: trimArray(deletedNoteIds) as number[],
     likedNoteIds: trimArray(likedNoteIds) as string[],
     unlikedNoteIds: trimArray(unlikedNoteIds) as string[]
@@ -171,7 +178,8 @@ export function getProgress(): LearningProgress {
         likedNoteIds: Array.isArray(data.likedNoteIds) ? [...data.likedNoteIds] : [],
         unlikedNoteIds: Array.isArray(data.unlikedNoteIds) ? [...data.unlikedNoteIds] : [],
         totalReadDays: typeof data.totalReadDays === 'number' ? data.totalReadDays : 1,
-        lastReadDate: data.lastReadDate
+        lastReadDate: data.lastReadDate,
+        lastReadVerseId: typeof data.lastReadVerseId === 'number' ? data.lastReadVerseId : undefined
       };
     }
   } catch (e) {
@@ -203,6 +211,9 @@ export function markVerseRead(verseId: number): LearningProgress {
   }
   const today = getTodayString();
 
+  // 始终记录最后阅读位置（「接着读」入口；复习已读章句也更新位置）
+  progress.lastReadVerseId = verseId;
+
   // 如果该章句未读过，则添加
   if (!progress.readVerseIds.includes(verseId)) {
     progress.readVerseIds.push(verseId);
@@ -224,6 +235,9 @@ export function markVerseRead(verseId: number): LearningProgress {
     // 如果是同一天，不改变 totalReadDays
     
     progress.lastReadDate = today;
+    saveProgress(progress);
+  } else {
+    // 已读但位置变化：只需保存最后阅读位置
     saveProgress(progress);
   }
   

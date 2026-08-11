@@ -143,6 +143,12 @@ function mergeProgress(cloudProgress, localProgress) {
         : localProgress.lastReadDate)
     : (cloudProgress.lastReadDate || localProgress.lastReadDate);
 
+  // 最后阅读位置：跟随「最后学习日期」较新的一侧（与 lastReadDate 同源）
+  const newerSide = (cloudProgress.lastReadDate && localProgress.lastReadDate)
+    ? (cloudProgress.lastReadDate > localProgress.lastReadDate ? cloudProgress : localProgress)
+    : (cloudProgress.lastReadDate ? cloudProgress : localProgress);
+  const lastReadVerseId = newerSide.lastReadVerseId;
+
   // 裁剪无界增长的标记数组：超过阈值时只保留最新的条目，避免文档体积膨胀
   const TRIM_THRESHOLD = 200;
   const trimArray = (arr) => (arr && arr.length > TRIM_THRESHOLD) ? arr.slice(-TRIM_THRESHOLD) : arr;
@@ -152,6 +158,7 @@ function mergeProgress(cloudProgress, localProgress) {
     myNotes,
     totalReadDays,
     lastReadDate,
+    lastReadVerseId,
     deletedNoteIds: trimArray(deletedNoteIds),
     likedNoteIds: trimArray(likedNoteIds),
     unlikedNoteIds: trimArray(unlikedNoteIds)

@@ -47,6 +47,39 @@
   }
 }
 
+// 继续学习卡片（次级样式，浅色底与今日推荐区分）
+.continueCard {
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  background: $color-bg-card;
+  border: 2rpx solid $color-divider;
+  position: relative;
+  overflow: hidden;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.99);
+  }
+
+  .dailyLabelIcon {
+    color: $color-primary;
+  }
+
+  .dailyLabelText {
+    color: $color-text-secondary;
+  }
+
+  .dailyOriginal {
+    color: $color-text-primary;
+  }
+
+  .dailyBtn {
+    background: $color-primary;
+  }
+}
+
 .dailyLabel {
   display: flex;
   align-items: center;
@@ -99,6 +132,13 @@
     opacity: 0.8;
     transform: scale(0.98);
   }
+}
+
+.dailyActions {
+  display: flex;
+  gap: $spacing-sm;
+  position: relative;
+  z-index: 1;
 }
 
 .dailyBtnText {

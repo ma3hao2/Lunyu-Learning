@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import Taro from '@tarojs/taro';
 import { CLOUD_ENV } from '@/config/cloud';
+import { silentLoginAndMerge } from '@/services/auth';
 // 全局样式
 import './app.scss';
 
@@ -20,6 +21,9 @@ function App(props) {
         console.error('[App] 云开发环境初始化失败:', e);
       }
     }
+    // 静默自动登录（openId 由平台注入，无需授权；失败静默，不影响使用）
+    // 首次登录会自动合并匿名期间的学习进度到用户 key 并上传云端
+    silentLoginAndMerge();
   }, []);
 
   return props.children;

@@ -327,3 +327,106 @@
   font-size: $font-size-sm;
   color: $color-text-tertiary;
 }
+
+// ============================================
+// 资料编辑弹层
+// ============================================
+.profileMask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profilePanel {
+  width: 600rpx;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-xl $spacing-lg $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profileTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-lg;
+}
+
+// 头像选择按钮（button 原生样式重置）
+.avatarPicker {
+  @include button-reset;
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: $radius-round;
+  background: $color-tag-bg;
+  margin-bottom: $spacing-lg;
+  overflow: hidden;
+  @include flex-center;
+}
+
+.avatarPickerImg {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: $radius-round;
+}
+
+.avatarPickerText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.nicknameInput {
+  width: 100%;
+  height: $button-height-md;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: 0 $spacing-md;
+  box-sizing: border-box;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  margin-bottom: $spacing-lg;
+}
+
+.profileActions {
+  display: flex;
+  gap: $spacing-md;
+  width: 100%;
+}
+
+.profileCancel {
+  flex: 1;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background: $color-bg-page;
+  color: $color-text-secondary;
+  @include flex-center;
+  font-size: $font-size-md;
+}
+
+.profileSave {
+  flex: 1;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  @include flex-center;
+  font-size: $font-size-md;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.85;
+  }
+
+  &.profileSaveDisabled {
+    opacity: 0.6;
+  }
+}

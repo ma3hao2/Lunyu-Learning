@@ -26,3 +26,10 @@ export function getTodayRecommend(): DailyRecommend {
   const dayIndex = getDayOfYear(today) % dailyRecommends.length;
   return dailyRecommends[dayIndex];
 }
+
+// 获取一条与当前不同的推荐（「换一批」：从池中随机挑一条，不重复当前）
+export function getAlternativeRecommend(excludeVerseId?: number): DailyRecommend {
+  const pool = dailyRecommends.filter(r => r.verseId !== excludeVerseId);
+  const candidates = pool.length > 0 ? pool : dailyRecommends;
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}

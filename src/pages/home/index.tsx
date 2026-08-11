@@ -5,7 +5,7 @@ import styles from './index.module.scss';
 import ProgressBar from '@/components/ProgressBar';
 import { versesIndex, type VerseIndex } from '@/data/versesIndex';
 import { chapters } from '@/data/chapters';
-import { getTodayRecommend } from '@/data/dailyRecommend';
+import { getTodayRecommend, getAlternativeRecommend } from '@/data/dailyRecommend';
 import { getProgress } from '@/utils/storage';
 
 const HomePage: React.FC = () => {
@@ -13,18 +13,22 @@ const HomePage: React.FC = () => {
   const [totalReadDays, setTotalReadDays] = useState(1);
   const [noteCount, setNoteCount] = useState(() => getProgress().myNotes.length);
   const [readVerseIds, setReadVerseIds] = useState<number[]>([]);
+  const [lastReadVerseId, setLastReadVerseId] = useState<number | undefined>(undefined);
   const [dailyRecommend, setDailyRecommend] = useState(() => getTodayRecommend());
 
   const refreshProgress = useCallback(() => {
     const progress = getProgress();
     setReadCount(progress.readVerseIds.length);
     setReadVerseIds(progress.readVerseIds);
+    setLastReadVerseId(progress.lastReadVerseId);
     setTotalReadDays(progress.totalReadDays || 1);
     setNoteCount(progress.myNotes.length);
   }, []);
 
   useDidShow(() => {
     refreshProgress();
+    // 每次进入首页轮换经典名句
+    setClassicVerses(pickRandomVerses());
   });
 
   // 今日推荐：只用轻量索引（original 字段），避免加载完整章节数据进主包
@@ -41,8 +45,12 @@ const HomePage: React.FC = () => {
     Taro.stopPullDownRefresh();
   });
 
-  // 经典名句（取前5条，仅展示原文索引）
-  const classicVerses = useMemo(() => versesIndex.slice(0, 5), []);
+  // 经典名句：随机取 5 条（每次进入页面轮换，避免老用户看腻固定内容）
+  const pickRandomVerses = useCallback((): VerseIndex[] => {
+    const shuffled = [...versesIndex].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 5);
+  }, []);
+  const [classicVerses, setClassicVerses] = useState<VerseIndex[]>(() => pickRandomVerses());
 
   const totalVerses = useMemo(() => {
     return chapters.reduce((sum, c) => sum + c.verseCount, 0);
@@ -55,10 +63,29 @@ const HomePage: React.FC = () => {
     return readChapterIds.size;
   }, [readVerseIds]);
 
+  // 接着读：最后阅读的章句（含篇章信息，仅用轻量索引）
+  const lastReadVerse = useMemo(() => {
+    if (!lastReadVerseId) return null;
+    const v = versesIndex.find(item => item.id === lastReadVerseId);
+    if (!v) return null;
+    const chapter = chapters.find(c => c.id === v.chapterId);
+    return { ...v, chapterTitle: chapter?.title || '' };
+  }, [lastReadVerseId]);
+
+  const handleContinueRead = () => {
+    if (!lastReadVerse) return;
+    Taro.navigateTo({ url: `/packageContent/pages/verseDetail/index?id=${lastReadVerse.id}` });
+  };
+
   const handleDailyClick = () => {
     if (!dailyVerse) return;
     Taro.navigateTo({ url: `/packageContent/pages/verseDetail/index?id=${dailyVerse.id}` });
   };
+
+  // 换一批：从推荐池随机换一条（不重复当前）
+  const handleShuffle = useCallback(() => {
+    setDailyRecommend(getAlternativeRecommend(dailyRecommend.verseId));
+  }, [dailyRecommend.verseId]);
 
   const handleClassicClick = (verseId: number) => {
     Taro.navigateTo({ url: `/packageContent/pages/verseDetail/index?id=${verseId}` });
@@ -92,10 +119,29 @@ const HomePage: React.FC = () => {
           <Text className={styles.dailyOriginal}>加载中...</Text>
         )}
         <Text className={styles.dailyReason}>{dailyRecommend.reason}</Text>
-        <View className={styles.dailyBtn}>
-          <Text className={styles.dailyBtnText}>开始学习 ›</Text>
+        <View className={styles.dailyActions}>
+          <View className={styles.dailyBtn} onClick={(e) => { e.stopPropagation(); handleShuffle(); }}>
+            <Text className={styles.dailyBtnText}>换一批</Text>
+          </View>
+          <View className={styles.dailyBtn} onClick={(e) => { e.stopPropagation(); handleDailyClick(); }}>
+            <Text className={styles.dailyBtnText}>开始学习 ›</Text>
+          </View>
         </View>
       </View>
+
+      {/* 继续学习（上次阅读位置，点击续读） */}
+      {lastReadVerse && (
+        <View className={styles.continueCard} onClick={handleContinueRead}>
+          <View className={styles.dailyLabel}>
+            <Text className={styles.dailyLabelIcon}>续</Text>
+            <Text className={styles.dailyLabelText}>继续学习</Text>
+          </View>
+          <Text className={styles.dailyOriginal} numberOfLines={2}>{lastReadVerse.original}</Text>
+          <View className={styles.dailyBtn}>
+            <Text className={styles.dailyBtnText}>{lastReadVerse.chapterTitle} · 第{lastReadVerse.order}章 ›</Text>
+          </View>
+        </View>
+      )}
 
       {/* 学习进度 */}
       <View className={styles.progressSection}>

@@ -183,6 +183,36 @@
   }
 }
 
+// 字号调节按钮组（阅读页内 A-/A+）
+.fontSizeGroup {
+  display: flex;
+  gap: $spacing-xs;
+}
+
+.fontSizeBtn {
+  width: 88rpx;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background: $color-bg-card;
+  color: $color-text-secondary;
+  border: 2rpx solid $color-divider;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-sm;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.96);
+  }
+
+  &.fontSizeBtnDisabled {
+    opacity: 0.4;
+  }
+}
+
 // 相关心得
 .insightSection {
   margin-top: $spacing-md;

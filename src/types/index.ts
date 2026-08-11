@@ -31,6 +31,7 @@ export interface LearningProgress {
   myNotes: MyNote[];        // 我的笔记
   totalReadDays: number;     // 连续学习天数
   lastReadDate?: string;     // 最后学习日期 (YYYY-MM-DD)
+  lastReadVerseId?: number;  // 最后阅读的章句 ID（「接着读」续读入口用）
   deletedNoteIds?: number[];    // 已删除笔记 ID（删除标记，跨端同步时防止旧数据复活）
   likedNoteIds?: string[];      // 已点赞的公开心得 ID（云笔记，string）
   unlikedNoteIds?: string[];    // 已取消点赞的公开心得 ID（取消标记）

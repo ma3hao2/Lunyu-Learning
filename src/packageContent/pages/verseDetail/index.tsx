@@ -10,7 +10,7 @@ import { chapters } from '@/data/chapters';
 import { useProgress } from '@/hooks/useProgress';
 import { getProgress, deleteNote, togglePublishedNoteLike } from '@/utils/storage';
 import { unpublishNote, fetchPublishedNotes, likePublishedNote, unlikePublishedNote, isLoggedIn } from '@/services/auth';
-import { getSettings, type FontSize } from '@/utils/settings';
+import { getSettings, saveSettings, type FontSize } from '@/utils/settings';
 
 // 将文本中的换行符（支持 \n 字面量和真实换行）拆分为行数组渲染
 function renderLines(text: string) {
@@ -119,6 +119,15 @@ const VerseDetailPage: React.FC = () => {
       duration: 1500
     });
   }, [verseId, isRead, markRead]);
+
+  // 字号调节：A- 降一档 / A+ 升一档（循环），保存到设置（阅读中随手调，符合阅读习惯）
+  const FONT_SIZES: FontSize[] = ['normal', 'large', 'xl'];
+  const adjustFontSize = useCallback((delta: 1 | -1) => {
+    const idx = FONT_SIZES.indexOf(fontSize);
+    const next = FONT_SIZES[(idx + delta + FONT_SIZES.length) % FONT_SIZES.length];
+    setFontSize(next);
+    saveSettings({ ...getSettings(), fontSize: next });
+  }, [fontSize]);
 
   // 上一句 / 下一句：同页切换 verseId（避免 redirectTo 整页重挂载 + 重复拉云函数）
   const verseIdx = useMemo(() => versesIndex.findIndex(v => v.id === verseId), [verseId]);
@@ -299,6 +308,20 @@ const VerseDetailPage: React.FC = () => {
           onClick={handleWriteNote}
         >
           <Text>写心得</Text>
+        </View>
+        <View className={styles.fontSizeGroup}>
+          <View
+            className={classnames(styles.fontSizeBtn, fontSize === 'normal' && styles.fontSizeBtnDisabled)}
+            onClick={() => adjustFontSize(-1)}
+          >
+            <Text>A-</Text>
+          </View>
+          <View
+            className={classnames(styles.fontSizeBtn, fontSize === 'xl' && styles.fontSizeBtnDisabled)}
+            onClick={() => adjustFontSize(1)}
+          >
+            <Text>A+</Text>
+          </View>
         </View>
       </View>
 

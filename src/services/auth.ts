@@ -1,6 +1,13 @@
 import Taro from '@tarojs/taro';
 import { UserInfo, LearningProgress, SyncResult, PublishedNote } from '@/types';
-import { clearPendingSync } from '@/utils/storage';
+import {
+  clearPendingSync,
+  getProgress,
+  saveProgress,
+  mergeProgress,
+  hasProgressData,
+  clearAnonymousProgress
+} from '@/utils/storage';
 
 const USER_KEY = 'lunyu_user';
 const isWeapp = process.env.TARO_ENV === 'weapp';
@@ -77,6 +84,73 @@ export async function wxLogin(): Promise<UserInfo> {
   const user = result.data;
   saveUserInfo(user);
   return user;
+}
+
+/**
+ * 静默登录 + 合并数据（App 启动/首次进入时自动调用，无感）
+ * 已登录直接返回；未登录则登录，并三路合并：匿名进度 + 用户key本地进度 + 云端进度。
+ * 任何失败均静默返回 null，不打扰用户（数据仍留在各自 key 下，不丢失）。
+ */
+export async function silentLoginAndMerge(): Promise<UserInfo | null> {
+  const cached = getUserInfo();
+  if (cached) return cached;
+
+  try {
+    // 登录前捕获匿名 key（lunyu_progress）下的本地进度
+    const localBeforeLogin = getProgress();
+    const hasLocal = hasProgressData(localBeforeLogin);
+
+    const u = await wxLogin();
+
+    // 登录后 getProgress 已切换为用户专属 key，读取该用户本地进度
+    const userLocalProgress = getProgress();
+    const hasUserLocal = hasProgressData(userLocalProgress);
+
+    // 拉取云端进度
+    const dlRes = await downloadProgress();
+    const cloudProgress = (dlRes.success && dlRes.data) ? dlRes.data : null;
+
+    // 三路合并（取并集，避免任一端数据丢失）
+    let merged = localBeforeLogin;
+    if (userLocalProgress && hasUserLocal) {
+      merged = mergeProgress(merged, userLocalProgress);
+    }
+    if (cloudProgress) {
+      merged = mergeProgress(merged, cloudProgress);
+    }
+
+    // 合并结果写入用户专属 key
+    if (hasLocal || hasUserLocal || cloudProgress) {
+      saveProgress(merged);
+    }
+    // 有本地数据时：上传合并结果到云端，并清理匿名 key
+    if (hasLocal || hasUserLocal) {
+      await uploadProgress(merged);
+      if (hasLocal) clearAnonymousProgress();
+    }
+    return u;
+  } catch (e) {
+    console.warn('[Auth] 静默登录失败（不影响使用）:', e);
+    return null;
+  }
+}
+
+/**
+ * 更新用户资料（昵称/头像）到云端并刷新本地缓存
+ * 昵称/头像来自用户主动填写（头像昵称填写能力），非授权获取
+ */
+export async function updateProfile(params: { nickName: string; avatarUrl: string }): Promise<UserInfo> {
+  if (!isWeapp) throw new Error('仅小程序环境支持');
+  const res = await Taro.cloud.callFunction({
+    name: 'login',
+    data: { action: 'updateProfile', ...params }
+  });
+  const result = res.result as { code: number; message: string; data?: UserInfo };
+  if (result.code !== 0 || !result.data) {
+    throw new Error(result.message || '资料更新失败');
+  }
+  saveUserInfo(result.data);
+  return result.data;
 }
 
 // ============================================
