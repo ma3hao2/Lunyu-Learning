@@ -67,7 +67,9 @@ exports.main = async (event, context) => {
               myNotes: [],
               totalReadDays: 1,
               lastReadDate: null,
-              deletedNoteIds: []
+              deletedNoteIds: [],
+              likedNoteIds: [],
+              unlikedNoteIds: []
             },
             updateTime: db.serverDate()
           }
@@ -85,6 +87,8 @@ exports.main = async (event, context) => {
 
 /**
  * 合并两份进度数据（取并集，保留更多数据）
+ * 与客户端 src/utils/storage.ts 的 mergeProgress 保持同源同步，
+ * 避免两端逻辑分叉导致点赞状态丢失或笔记被盲覆盖。
  */
 function mergeProgress(cloudProgress, localProgress) {
   if (!cloudProgress) return localProgress;
@@ -96,16 +100,31 @@ function mergeProgress(cloudProgress, localProgress) {
     ...(localProgress.readVerseIds || [])
   ])];
 
+  // 公开心得点赞：并集 + 取消标记剔除
+  const unlikedNoteIds = [...new Set([
+    ...(cloudProgress.unlikedNoteIds || []),
+    ...(localProgress.unlikedNoteIds || [])
+  ])];
+  const likedNoteIds = [...new Set([
+    ...(cloudProgress.likedNoteIds || []),
+    ...(localProgress.likedNoteIds || [])
+  ])].filter(id => !unlikedNoteIds.includes(id));
+
   // 删除标记：取并集，合并后过滤已删除笔记（防止云端旧数据复活）
   const deletedNoteIds = [...new Set([
     ...(cloudProgress.deletedNoteIds || []),
     ...(localProgress.deletedNoteIds || [])
   ])];
 
-  // 笔记：合并去重（按 id，本地后写覆盖云端，last-writer-wins）
+  // 笔记：按 id 合并去重，比较 updateTime（无则回退 createTime），较新版本胜出。
+  // 跨设备编辑同一笔记时，保留最后修改的版本而非简单覆盖。
   const noteMap = new Map();
+  const noteTime = (n) => n.updateTime || n.createTime;
   [...(cloudProgress.myNotes || []), ...(localProgress.myNotes || [])].forEach(note => {
-    noteMap.set(note.id, note);
+    const existing = noteMap.get(note.id);
+    if (!existing || noteTime(note) >= noteTime(existing)) {
+      noteMap.set(note.id, note);
+    }
   });
   const myNotes = [...noteMap.values()]
     .sort((a, b) => b.id - a.id)
@@ -129,6 +148,8 @@ function mergeProgress(cloudProgress, localProgress) {
     myNotes,
     totalReadDays,
     lastReadDate,
-    deletedNoteIds
+    deletedNoteIds,
+    likedNoteIds,
+    unlikedNoteIds
   };
 }

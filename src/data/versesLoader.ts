@@ -50,15 +50,13 @@ export async function loadVerse(verseId: number): Promise<Verse | null> {
 }
 
 // 异步加载全部篇章完整数据（用于深度搜索 commentary），利用已有缓存
+// 并行加载 20 个篇章（loadChapter 内部有 chapterCache 防重复，并行安全）
 export async function loadAllVerses(): Promise<Verse[]> {
   if (allVersesCache) {
     return allVersesCache;
   }
-  const all: Verse[] = [];
-  for (const ch of chapters) {
-    const verses = await loadChapter(ch.id);
-    all.push(...verses);
-  }
+  const results = await Promise.all(chapters.map(ch => loadChapter(ch.id)));
+  const all: Verse[] = results.flat();
   allVersesCache = all;
   return all;
 }

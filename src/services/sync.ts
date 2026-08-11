@@ -6,9 +6,18 @@ export interface SyncNowResult {
   message: string;
 }
 
-// 手动双向同步：下载云端 → 合并写回本地 → 上传合并结果。
+// 并发保护：同步进行中时复用同一个 Promise，避免重复请求浪费云函数配额
+let syncInFlight: Promise<SyncNowResult> | null = null;
+
+// 手动双向同步：下载云端 -> 合并写回本地 -> 上传合并结果。
 // 下载失败时仍上传本地数据，并通过 success=false / message 告知用户同步不完整。
-export async function syncProgressNow(): Promise<SyncNowResult> {
+export function syncProgressNow(): Promise<SyncNowResult> {
+  if (syncInFlight) return syncInFlight;
+  syncInFlight = doSync().finally(() => { syncInFlight = null; });
+  return syncInFlight;
+}
+
+async function doSync(): Promise<SyncNowResult> {
   const local = getProgress();
   const dlRes = await downloadProgress();
   let merged = local;

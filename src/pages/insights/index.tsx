@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, Input, ScrollView } from '@tarojs/components';
-import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
+import Taro, { useDidShow, usePullDownRefresh, useShareAppMessage } from '@tarojs/taro';
 import styles from './index.module.scss';
 import NoteCard from '@/components/NoteCard';
 import { fetchPublishedNotes, likePublishedNote, unlikePublishedNote } from '@/services/auth';
@@ -17,6 +17,12 @@ const InsightsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // 分享：邀请好友一起学习论语心得
+  useShareAppMessage(() => ({
+    title: '论语学习心得 · 以文会友，以友辅仁',
+    path: '/pages/insights/index'
+  }));
 
   const debouncedSearchText = useDebounce(searchText, 300);
 

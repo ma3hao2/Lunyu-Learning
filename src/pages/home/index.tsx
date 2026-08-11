@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import styles from './index.module.scss';
@@ -26,21 +26,15 @@ const HomePage: React.FC = () => {
   });
 
   // 今日推荐：只用轻量索引（original 字段），避免加载完整章节数据进主包
-  const [dailyVerse, setDailyVerse] = useState<VerseIndex | null>(null);
-
-  const resolveDailyVerse = useCallback((recommend: typeof dailyRecommend): VerseIndex | null => {
-    return versesIndex.find(v => v.id === recommend.verseId) || versesIndex[0] || null;
-  }, []);
-
-  useEffect(() => {
-    setDailyVerse(resolveDailyVerse(dailyRecommend));
-  }, [dailyRecommend, resolveDailyVerse]);
+  // dailyVerse 由 dailyRecommend 同步派生（useMemo），避免 state+useEffect 导致首帧 null 闪烁
+  const dailyVerse = useMemo<VerseIndex | null>(
+    () => versesIndex.find(v => v.id === dailyRecommend.verseId) || versesIndex[0] || null,
+    [dailyRecommend]
+  );
 
   // 下拉刷新：重新获取今日推荐与进度
   usePullDownRefresh(async () => {
-    const recommend = getTodayRecommend();
-    setDailyRecommend(recommend);
-    setDailyVerse(resolveDailyVerse(recommend));
+    setDailyRecommend(getTodayRecommend());
     refreshProgress();
     Taro.stopPullDownRefresh();
   });

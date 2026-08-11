@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
-import Taro, { useRouter, useDidShow } from '@tarojs/taro';
+import Taro, { useRouter, useDidShow, useShareAppMessage } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import NoteCard from '@/components/NoteCard';
@@ -25,8 +25,19 @@ function renderLines(text: string) {
 
 const VerseDetailPage: React.FC = () => {
   const router = useRouter();
-  const verseId = Number(router.params.id || '101');
+  const [verseId, setVerseId] = useState(() => Number(router.params.id || '101'));
   const { isRead, markRead } = useProgress();
+
+  // 分享：转发当前章句，标题用原文截取，path 带 verseId 供他人打开
+  useShareAppMessage(() => {
+    const title = verse
+      ? verse.original.slice(0, 24) + (verse.original.length > 24 ? '…' : '')
+      : '论语学习';
+    return {
+      title,
+      path: `/packageContent/pages/verseDetail/index?id=${verseId}`
+    };
+  });
 
   const [verse, setVerse] = useState<Verse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -105,7 +116,7 @@ const VerseDetailPage: React.FC = () => {
     });
   }, [verseId, isRead, markRead]);
 
-  // 上一句 / 下一句（versesIndex 为全局排序，跨篇章自然衔接）
+  // 上一句 / 下一句：同页切换 verseId（避免 redirectTo 整页重挂载 + 重复拉云函数）
   const verseIdx = useMemo(() => versesIndex.findIndex(v => v.id === verseId), [verseId]);
   const prevVerseId = verseIdx > 0 ? versesIndex[verseIdx - 1].id : null;
   const nextVerseId = verseIdx >= 0 && verseIdx < versesIndex.length - 1
@@ -114,12 +125,18 @@ const VerseDetailPage: React.FC = () => {
 
   const goPrevVerse = useCallback(() => {
     if (prevVerseId === null) return;
-    Taro.redirectTo({ url: `/packageContent/pages/verseDetail/index?id=${prevVerseId}` });
+    setVerseId(prevVerseId);
+    setLoading(true);
+    setVerse(null);
+    setRelatedLoading(true);
   }, [prevVerseId]);
 
   const goNextVerse = useCallback(() => {
     if (nextVerseId === null) return;
-    Taro.redirectTo({ url: `/packageContent/pages/verseDetail/index?id=${nextVerseId}` });
+    setVerseId(nextVerseId);
+    setLoading(true);
+    setVerse(null);
+    setRelatedLoading(true);
   }, [nextVerseId]);
 
   // 跳转到所属篇章
