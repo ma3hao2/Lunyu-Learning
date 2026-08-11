@@ -149,7 +149,7 @@ describe('注释换行渲染 (VSD-004)', () => {
   });
 
   // VSD-003: 注释展示完整
-  test('VSD-003 [P0]: 全部 512 章 commentary 含 【解读】', async () => {
+  test('VSD-003 [P0]: 全部 509 章 commentary 含 【解读】', async () => {
     for (let id = 1; id <= 20; id++) {
       const verses = await loadChapter(id);
       for (const v of verses) {

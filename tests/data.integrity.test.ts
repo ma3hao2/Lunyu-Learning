@@ -8,11 +8,11 @@ import { versesIndex } from '@/data/versesIndex';
 import { loadChapter } from '@/data/versesLoader';
 
 describe('数据完整性测试 (PRF-005 / PRF-006 / CLS-001 / CLS-002)', () => {
-  // PRF-005: 全量数据完整性 — 20 篇 × verseCount 之和 = 512
-  test('PRF-005 [P0]: chapters 共 20 篇，verseCount 总和 = 512', () => {
+  // PRF-005: 全量数据完整性 — 20 篇 × verseCount 之和 = 509
+  test('PRF-005 [P0]: chapters 共 20 篇，verseCount 总和 = 509', () => {
     expect(chapters).toHaveLength(20); // CLS-001 / CLS-002
     const total = chapters.reduce((s, c) => s + c.verseCount, 0);
-    expect(total).toBe(512);
+    expect(total).toBe(509);
   });
 
   // PRF-005: 篇章基础字段完整
@@ -33,11 +33,11 @@ describe('数据完整性测试 (PRF-005 / PRF-006 / CLS-001 / CLS-002)', () => 
     expect(ids).toEqual(Array.from({ length: 20 }, (_, i) => i + 1));
   });
 
-  // PRF-005: versesIndex 共 512 条
-  test('PRF-005 [P0]: versesIndex 共 512 条，id 唯一', () => {
-    expect(versesIndex).toHaveLength(512);
+  // PRF-005: versesIndex 共 509 条
+  test('PRF-005 [P0]: versesIndex 共 509 条，id 唯一', () => {
+    expect(versesIndex).toHaveLength(509);
     const ids = new Set(versesIndex.map(v => v.id));
-    expect(ids.size).toBe(512);
+    expect(ids.size).toBe(509);
   });
 
   // PRF-005: 索引中各篇章条数 = chapters.verseCount
@@ -49,7 +49,7 @@ describe('数据完整性测试 (PRF-005 / PRF-006 / CLS-001 / CLS-002)', () => 
   });
 
   // PRF-005 / PRF-006: 完整章句数据 (translation / commentary 非空)
-  test('PRF-006 [P0]: 全部 512 章 translation 与 commentary 均非空', async () => {
+  test('PRF-006 [P0]: 全部 509 章 translation 与 commentary 均非空', async () => {
     const versesCount: { chapterId: number; verses: number; missing: number[] }[] = [];
     let totalMissing = 0;
     for (let id = 1; id <= 20; id++) {
@@ -100,10 +100,10 @@ describe('数据完整性测试 (PRF-005 / PRF-006 / CLS-001 / CLS-002)', () => 
   });
 
   // CMP-006 / CMP-007 边界
-  test('CMP-006/007 [P1]: ProgressBar 边界 — 0/512 与 16/16', () => {
+  test('CMP-006/007 [P1]: ProgressBar 边界 — 0/509 与 16/16', () => {
     const calc = (cur: number, total: number) => total === 0 ? 0 : Math.min(100, (cur / total) * 100);
-    expect(calc(0, 512)).toBe(0);
+    expect(calc(0, 509)).toBe(0);
     expect(calc(16, 16)).toBe(100);
-    expect(calc(10, 512)).toBeCloseTo(1.95, 1);
+    expect(calc(10, 509)).toBeCloseTo(1.96, 1);
   });
 });

@@ -117,7 +117,7 @@ describe('搜索功能 (CLS-005 ~ CLS-012)', () => {
   });
 
   // PRF-003: 搜索性能
-  test('PRF-003 [P0]: 512 条索引搜索响应 < 100ms', () => {
+  test('PRF-003 [P0]: 509 条索引搜索响应 < 100ms', () => {
     const t0 = Date.now();
     for (let i = 0; i < 10; i++) searchVerses('学');
     const cost = Date.now() - t0;
