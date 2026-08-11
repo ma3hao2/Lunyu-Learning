@@ -1,0 +1,79 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+
+  &.read {
+    border-left: 6rpx solid $color-primary;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.order {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.badges {
+  display: flex;
+  gap: 8rpx;
+}
+
+.badge {
+  font-size: $font-size-xs;
+  color: $color-success;
+  background: rgba(91, 140, 90, 0.1);
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+}
+
+.noteBadge {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  background: $color-tag-bg;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+}
+
+.original {
+  display: block;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  line-height: $line-height-loose;
+  margin-bottom: $spacing-sm;
+  @include text-ellipsis-multi(2);
+}
+
+.keyPoint {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-sm;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.arrow {
+  font-size: $font-size-sm;
+  color: $color-primary;
+}

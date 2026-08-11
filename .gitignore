@@ -1,0 +1,29 @@
+# 依赖
+node_modules/
+
+# 构建产物
+dist/
+lib/
+
+# 微信小程序上传私钥与认证凭证（敏感，禁止提交）
+.auth/
+
+# Taro / SWC 缓存
+.swc/
+.pai/
+
+# 编辑器与系统文件
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# 备份与抓取数据（大文件/临时产物，不入库）
+backups/
+scripts/lunyu8_data.json
+scripts/extracted_verses.txt
+
+# 本机工具运行时状态（会话/主题元数据，不入库）
+.reasonix/desktop-topic-*.json
+.zcode/

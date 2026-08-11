@@ -1,0 +1,9 @@
+{
+  "name": "publishNote",
+  "version": "1.0.0",
+  "description": "公开心得（社区）云函数：发布/取消/编辑/列表/点赞",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

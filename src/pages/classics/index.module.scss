@@ -1,0 +1,259 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  padding: 0 $page-padding $spacing-xl;
+}
+
+// 顶部简介
+.introCard {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  margin: $spacing-md 0 $spacing-lg;
+  box-shadow: 0 8rpx 24rpx rgba(184, 97, 45, 0.2);
+}
+
+.introTitle {
+  display: block;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+  margin-bottom: $spacing-xs;
+}
+
+.introText {
+  display: block;
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: $line-height-normal;
+}
+
+// 搜索模式切换
+.modeTabs {
+  display: flex;
+  margin-bottom: $spacing-sm;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: 6rpx;
+}
+
+.modeTab {
+  flex: 1;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  padding: 12rpx 0;
+  border-radius: $radius-sm;
+  transition: all $transition-base;
+
+  &.modeTabActive {
+    background: $color-primary;
+    color: #fff;
+    font-weight: $font-weight-medium;
+  }
+}
+
+// 搜索栏
+.searchBar {
+  display: flex;
+  align-items: center;
+  background: $color-bg-card;
+  border-radius: $radius-round;
+  padding: 16rpx $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.searchIcon {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.clearBtn {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+  padding: 8rpx;
+  flex-shrink: 0;
+}
+
+// 搜索结果统计
+.searchStats {
+  margin-bottom: $spacing-md;
+}
+
+.searchStatsText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+// 搜索匹配章句
+.verseSection {
+  margin-bottom: $spacing-lg;
+}
+
+.sectionTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+}
+
+.sectionCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.searchResultCard {
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
+  box-shadow: $shadow-card;
+  border-left: 6rpx solid $color-primary;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.resultHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-xs;
+}
+
+.resultChapter {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.resultArrow {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+// 匹配字段徽章
+.matchBadges {
+  display: flex;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+.matchBadge {
+  padding: 2rpx 12rpx;
+  font-size: $font-size-xs;
+  border-radius: $radius-xs;
+  background: $color-tag-bg;
+  color: $color-primary;
+}
+
+.resultOriginal {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: $line-height-loose;
+  @include text-ellipsis-multi(3);
+}
+
+// 上下文预览（译文/注释命中时展示匹配片段）
+.resultPreview {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: $line-height-loose;
+  margin-top: $spacing-xs;
+  padding-top: $spacing-xs;
+  border-top: 1rpx solid $color-divider;
+  @include text-ellipsis-multi(2);
+}
+
+// 搜索高亮文本（内联嵌套于 resultOriginal / resultPreview）
+.highlight {
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.resultMore {
+  display: block;
+  text-align: center;
+  font-size: $font-size-xs;
+  color: $color-primary;
+  padding: $spacing-md 0;
+
+  &:active {
+    opacity: 0.7;
+  }
+  padding: $spacing-sm 0;
+}
+
+// 分类标签
+.tagScroll {
+  margin-bottom: $spacing-md;
+  white-space: nowrap;
+}
+
+.tagItem {
+  display: inline-block;
+  padding: 12rpx $spacing-lg;
+  margin-right: $spacing-sm;
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  background: $color-bg-card;
+  white-space: nowrap;
+  transition: all $transition-base;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-white;
+  }
+}
+
+// 篇章列表
+.listHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.listTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.listCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.chapterList {
+  margin-bottom: $spacing-xl;
+}
+
+.emptyTip {
+  text-align: center;
+  padding: $spacing-xl 0;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}

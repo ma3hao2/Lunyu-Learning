@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>论语学习小程序 - 手机扫码预览</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #b8612d 0%, #8b4513 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+  }
+  .title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 6px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 24px;
+  }
+  .qrcode {
+    width: 280px;
+    height: 280px;
+    margin: 0 auto 20px;
+    border: 3px solid #f0f0f0;
+    border-radius: 12px;
+    padding: 8px;
+  }
+  .qrcode img {
+    width: 100%;
+    height: 100%;
+  }
+  .url {
+    font-size: 13px;
+    color: #b8612d;
+    word-break: break-all;
+    background: #fdf5ee;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .tips {
+    font-size: 12px;
+    color: #999;
+    margin-top: 16px;
+    line-height: 1.8;
+  }
+  .tips span {
+    display: block;
+  }
+  .tunnel-section {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px dashed #eee;
+  }
+  .tunnel-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="title">论语学习</div>
+  <div class="subtitle">学而时习之，不亦说乎</div>
+
+  <div class="qrcode">
+    <img id="qrImg" src="" alt="QR Code">
+  </div>
+
+  <div class="url" id="urlText"></div>
+
+  <div class="tips">
+    <span>📱 手机扫描二维码即可预览</span>
+    <span>⚠ 手机需与电脑连接同一 WiFi</span>
+  </div>
+
+  <div class="tunnel-section" id="tunnelSection" style="display:none">
+    <div class="tunnel-title">公网预览链接（任意网络可访问）：</div>
+    <div class="url" id="tunnelUrl" style="background:#e8f5e9;color:#2e7d32"></div>
+    <div class="qrcode" style="margin-top:8px">
+      <img id="tunnelQrImg" src="" alt="Tunnel QR">
+    </div>
+  </div>
+</div>
+
+<script>
+const localIP = '127.0.0.1';
+const port = '10087';
+const localUrl = 'http://' + localIP + ':' + port + '/';
+
+document.getElementById('qrImg').src =
+  'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(localUrl);
+document.getElementById('urlText').textContent = localUrl;
+
+// 同时尝试 localhost
+document.getElementById('urlText').textContent += '\n或 http://localhost:' + port + '/';
+</script>
+</body>
+</html>

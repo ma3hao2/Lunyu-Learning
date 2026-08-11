@@ -1,0 +1,260 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  padding: 0 $page-padding $spacing-xl;
+  background: linear-gradient(180deg, #f5ede3 0%, $color-bg-page 40%);
+}
+
+// 顶部标题区
+.header {
+  padding: $spacing-lg 0 $spacing-md;
+}
+
+.appTitle {
+  display: block;
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.appSubtitle {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+// 今日推荐卡片
+.dailyCard {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  box-shadow: 0 8rpx 24rpx rgba(184, 97, 45, 0.25);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -40rpx;
+    right: -40rpx;
+    width: 200rpx;
+    height: 200rpx;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.dailyLabel {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.dailyLabelIcon {
+  font-size: $font-size-md;
+  margin-right: $spacing-xs;
+}
+
+.dailyLabelText {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: $font-weight-medium;
+}
+
+.dailyOriginal {
+  display: block;
+  font-size: $font-size-lg;
+  color: $color-text-white;
+  line-height: $line-height-loose;
+  font-weight: $font-weight-medium;
+  margin-bottom: $spacing-sm;
+  position: relative;
+  z-index: 1;
+}
+
+.dailyReason {
+  display: block;
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: $line-height-normal;
+  margin-bottom: $spacing-md;
+  position: relative;
+  z-index: 1;
+}
+
+.dailyBtn {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 12rpx $spacing-lg;
+  border-radius: $radius-button;
+  position: relative;
+  z-index: 1;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+}
+
+.dailyBtnText {
+  font-size: $font-size-sm;
+  color: $color-text-white;
+  white-space: nowrap;
+}
+
+// 进度概览
+.progressSection {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.progressTitle {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.statsRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $spacing-lg;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.statNumber {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+}
+
+.statLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+// 快捷入口
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitleText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.sectionMore {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.quickGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.quickItem {
+  width: calc((100% - #{$spacing-md}) / 2);
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  box-shadow: $shadow-card;
+  display: flex;
+  align-items: center;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.quickIcon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: $radius-md;
+  background: $color-tag-bg;
+  @include flex-center;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.quickIconText {
+  font-size: 36rpx;
+}
+
+.quickInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.quickName {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.quickDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+  @include text-ellipsis;
+}
+
+// 经典名句
+.classicList {
+  margin-bottom: $spacing-lg;
+}
+
+.classicCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  border-left: 6rpx solid $color-primary;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.95;
+    transform: scale(0.98);
+  }
+}
+
+.classicOriginal {
+  display: block;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  line-height: $line-height-loose;
+  font-weight: $font-weight-medium;
+  margin-bottom: $spacing-xs;
+}
+
+.classicKeyPoint {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}

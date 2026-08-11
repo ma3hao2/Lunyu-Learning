@@ -1,0 +1,292 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  padding: 0 $page-padding $spacing-xl;
+  // 阅读字号（CSS 变量，随「设置 → 正文字号」缩放）
+  --reading-size: $font-size-xl;
+  --reading-secondary-size: $font-size-md;
+
+  &.fontLarge {
+    --reading-size: 42rpx;
+    --reading-secondary-size: 34rpx;
+  }
+
+  &.fontXl {
+    --reading-size: 48rpx;
+    --reading-secondary-size: 38rpx;
+  }
+}
+
+// 原文卡片
+.originalCard {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  border-radius: $radius-xl;
+  padding: $spacing-xl $spacing-lg;
+  margin: $spacing-md 0 $spacing-lg;
+  box-shadow: 0 8rpx 24rpx rgba(184, 97, 45, 0.25);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: -60rpx;
+    left: -40rpx;
+    width: 240rpx;
+    height: 240rpx;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+.chapterTag {
+  display: inline-block;
+  font-size: $font-size-xs;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.15);
+  padding: 4rpx 16rpx;
+  border-radius: $radius-xs;
+  margin-bottom: $spacing-sm;
+  position: relative;
+  z-index: 1;
+}
+
+.originalText {
+  display: block;
+  font-size: var(--reading-size);
+  color: $color-text-white;
+  line-height: $line-height-loose;
+  font-weight: $font-weight-medium;
+  margin-bottom: $spacing-md;
+  position: relative;
+  z-index: 1;
+}
+
+.keyPointText {
+  display: block;
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.75);
+  position: relative;
+  z-index: 1;
+}
+
+// 内容区块
+.sectionCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.sectionTitleIcon {
+  width: 8rpx;
+  height: 32rpx;
+  background: $color-primary;
+  border-radius: $radius-xs;
+  margin-right: $spacing-sm;
+}
+
+.sectionTitleText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.sectionContent {
+  display: block;
+  font-size: var(--reading-secondary-size);
+  color: $color-text-secondary;
+  line-height: $line-height-loose;
+  white-space: pre-wrap;
+}
+
+// 操作栏
+.actionBar {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+// 上一句 / 下一句导航
+.navBar {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.navBtn {
+  flex: 1;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background: $color-bg-card;
+  color: $color-primary;
+  border: 2rpx solid $color-primary;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-sm;
+  white-space: nowrap;
+
+  &.navBtnDisabled {
+    background: $color-tag-bg;
+    color: $color-text-secondary;
+    border-color: $color-tag-bg;
+  }
+}
+
+.actionBtn {
+  flex: 1;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-sm;
+  white-space: nowrap;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.98);
+  }
+}
+
+.actionBtnPrimary {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  box-shadow: 0 4rpx 12rpx rgba(184, 97, 45, 0.3);
+}
+
+.actionBtnSecondary {
+  background: $color-bg-card;
+  color: $color-primary;
+  border: 2rpx solid $color-primary;
+  box-sizing: border-box;
+}
+
+.actionBtnRead {
+  background: $color-tag-bg;
+  color: $color-text-secondary;
+
+  &.read {
+    background: rgba(91, 140, 90, 0.1);
+    color: $color-success;
+  }
+}
+
+// 相关心得
+.insightSection {
+  margin-top: $spacing-md;
+}
+
+.insightSectionTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.insightSectionText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.insightSectionCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.emptyTip {
+  text-align: center;
+  padding: $spacing-lg 0;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+// 我的笔记卡片
+.myNoteCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  border-left: 6rpx solid $color-primary;
+}
+
+.myNoteContent {
+  display: block;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  line-height: $line-height-loose;
+  margin-bottom: $spacing-sm;
+}
+
+.myNoteTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-sm;
+}
+
+.myNoteTag {
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  background: $color-tag-bg;
+  color: $color-primary;
+  font-size: $font-size-xs;
+  border-radius: $radius-xs;
+}
+
+.myNoteTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.myNoteFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.myNoteActions {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.myNoteAction {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-xs;
+  background: $color-tag-bg;
+}
+
+.myNoteActionDelete {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-xs;
+  background: rgba(153, 153, 153, 0.1);
+}
+
+/* 内容来源标注 */
+.sourceBar {
+  display: flex;
+  justify-content: center;
+  padding: $spacing-md 0 $spacing-lg;
+}
+
+.sourceText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}

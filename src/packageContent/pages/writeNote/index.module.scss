@@ -1,0 +1,191 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  padding: 0 $page-padding $spacing-xl;
+  display: flex;
+  flex-direction: column;
+  // 引用原文字号（随「设置 → 正文字号」缩放）
+  --quote-size: $font-size-sm;
+
+  &.fontLarge {
+    --quote-size: $font-size-md;
+  }
+
+  &.fontXl {
+    --quote-size: $font-size-lg;
+  }
+}
+
+// 原文引用
+.quoteCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-lg;
+  margin: $spacing-md 0;
+  box-shadow: $shadow-card;
+  border-left: 6rpx solid $color-primary;
+}
+
+.quoteLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-xs;
+}
+
+.quoteText {
+  display: block;
+  font-size: var(--quote-size);
+  color: $color-text-secondary;
+  line-height: $line-height-loose;
+}
+
+// 编辑区
+.editorCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.editorTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 400rpx;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  line-height: $line-height-loose;
+  border: none;
+  background: transparent;
+}
+
+.charCount {
+  text-align: right;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-sm;
+}
+
+// 标签选择
+.tagSection {
+  margin: $spacing-md 0;
+}
+
+.tagLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.tagItem {
+  padding: 8rpx $spacing-md;
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  background: $color-tag-bg;
+  white-space: nowrap;
+  transition: all $transition-base;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-white;
+  }
+}
+
+// 自定义标签输入
+.tagInputRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-top: $spacing-sm;
+}
+
+.tagInput {
+  flex: 1;
+  height: 64rpx;
+  padding: 0 $spacing-md;
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  background: $color-tag-bg;
+}
+
+.tagAddBtn {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  padding: 8rpx $spacing-md;
+  white-space: nowrap;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+// 公开发布开关
+.publishRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: $spacing-lg;
+  padding: $spacing-md $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+}
+
+.publishInfo {
+  flex: 1;
+  margin-right: $spacing-md;
+}
+
+.publishLabel {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.publishDesc {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+// 底部按钮
+.submitBtn {
+  margin-top: $spacing-lg;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  @include flex-center;
+  box-shadow: 0 4rpx 16rpx rgba(184, 97, 45, 0.3);
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.submitBtnText {
+  font-size: $font-size-md;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}

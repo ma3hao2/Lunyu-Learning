@@ -1,0 +1,71 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  padding: 0 $page-padding $spacing-xl;
+}
+
+// 篇章头部
+.chapterHeader {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  margin: $spacing-md 0 $spacing-lg;
+  box-shadow: 0 8rpx 24rpx rgba(184, 97, 45, 0.2);
+}
+
+.chapterTitle {
+  display: block;
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+  margin-bottom: $spacing-xs;
+}
+
+.chapterTheme {
+  display: inline-block;
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4rpx 16rpx;
+  border-radius: $radius-xs;
+  margin-bottom: $spacing-sm;
+}
+
+.chapterDesc {
+  display: block;
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: $line-height-normal;
+}
+
+// 列表标题
+.listTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.listTitleText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.listCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.verseList {
+  margin-bottom: $spacing-xl;
+}
+
+// 空状态
+.emptyTip {
+  text-align: center;
+  padding: $spacing-xl 0;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}

@@ -1,0 +1,329 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  padding-bottom: $spacing-xl;
+}
+
+// 用户卡片
+.userCard {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  padding: $spacing-xl $page-padding $spacing-lg;
+  border-radius: 0 0 $radius-xl $radius-xl;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+}
+
+// 登录区域（未登录）
+.loginArea {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-round;
+  background: rgba(255, 255, 255, 0.3);
+  @include flex-center;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+}
+
+.avatarText {
+  font-size: $font-size-xl;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+.userMeta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.userName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.userDesc {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 4rpx;
+}
+
+// 登录按钮
+.loginBtn {
+  padding: 12rpx 28rpx;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: $radius-button;
+  @include flex-center;
+  flex-shrink: 0;
+}
+
+.loginBtnText {
+  font-size: $font-size-sm;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+// 退出按钮
+.logoutBtn {
+  padding: 10rpx 24rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: $radius-button;
+  @include flex-center;
+  flex-shrink: 0;
+}
+
+.logoutText {
+  font-size: $font-size-sm;
+  color: $color-text-white;
+}
+
+// 统计卡片
+.statsCard {
+  margin: -$spacing-sm $page-padding 0;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  position: relative;
+  z-index: 1;
+}
+
+.statsRow {
+  display: flex;
+  justify-content: space-around;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.statNumber {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+}
+
+.statLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+// 进度区域
+.progressSection {
+  margin: $spacing-lg $page-padding 0;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.progressTitle {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+// 我的笔记
+.notesSection {
+  margin: $spacing-lg $page-padding 0;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.sectionCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.noteCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  border-left: 6rpx solid $color-primary;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.95;
+  }
+}
+
+.noteContent {
+  display: block;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  line-height: $line-height-loose;
+  margin-bottom: $spacing-sm;
+  @include text-ellipsis-multi(3);
+}
+
+.noteTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-sm;
+}
+
+.noteTag {
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  background: $color-tag-bg;
+  color: $color-primary;
+  font-size: $font-size-xs;
+  border-radius: $radius-xs;
+}
+
+.noteFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.noteTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.noteSource {
+  font-size: $font-size-xs;
+  color: $color-primary;
+}
+
+// 笔记操作按钮
+.noteActions {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-sm;
+  justify-content: flex-end;
+}
+
+.noteAction {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-xs;
+  background: $color-tag-bg;
+}
+
+.noteActionDelete {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-xs;
+  background: rgba(153, 153, 153, 0.1);
+}
+
+.noteActionPublic {
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.notePublicBadge {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  background: rgba(184, 97, 45, 0.1);
+  padding: 2rpx 12rpx;
+  border-radius: $radius-xs;
+  margin-left: $spacing-xs;
+}
+
+.noteMore {
+  display: block;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $color-primary;
+  padding: $spacing-md 0;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+// 功能菜单
+.menuSection {
+  margin: $spacing-lg $page-padding 0;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+  transition: all $transition-base;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:active {
+    background: $color-bg-hover;
+  }
+}
+
+.menuIcon {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: $radius-sm;
+  background: $color-tag-bg;
+  @include flex-center;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.menuIconText {
+  font-size: $font-size-md;
+}
+
+.menuText {
+  flex: 1;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.menuArrow {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.emptyNotes {
+  text-align: center;
+  padding: $spacing-xl 0;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
