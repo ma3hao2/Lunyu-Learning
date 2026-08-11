@@ -24,11 +24,13 @@ describe('今日推荐 (HOME-002 / HOME-003 / HOME-004)', () => {
     expect(verse!.original).toBeTruthy();
   });
 
-  // HOME-003: 推荐按日期轮换（按 dayOfMonth % length）
-  test('HOME-003 [P1]: 推荐按日期 dayOfMonth % 8 轮换', () => {
-    // 直接用函数逻辑反推
+  // HOME-003: 推荐按日期轮换（按 dayOfYear % length）
+  test('HOME-003 [P1]: 推荐按一年中第几天 dayOfYear % 8 轮换', () => {
+    // 复刻 getTodayRecommend 的 dayOfYear 计算
     const today = new Date();
-    const dayIndex = today.getDate() % dailyRecommends.length;
+    const start = new Date(today.getFullYear(), 0, 0);
+    const dayOfYear = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    const dayIndex = dayOfYear % dailyRecommends.length;
     const r = getTodayRecommend();
     expect(r.verseId).toBe(dailyRecommends[dayIndex].verseId);
     expect(r.reason).toBe(dailyRecommends[dayIndex].reason);

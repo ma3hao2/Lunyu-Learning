@@ -105,11 +105,15 @@ export function mergeProgress(local: LearningProgress, cloud: LearningProgress):
     ...(local.deletedNoteIds || []),
     ...(cloud.deletedNoteIds || [])
   ])];
-  // 笔记按 id 合并去重：本地后写覆盖云端（last-writer-wins）。
-  // 实现里 cloud 先入 Map、local 后入覆盖，云端副本只是兜底，不会覆盖本机编辑。
+  // 笔记按 id 合并去重：比较 updateTime（无则回退 createTime），较新版本胜出。
+  // 跨设备编辑同一笔记时，保留最后修改的版本而非简单覆盖。
   const noteMap = new Map<number, MyNote>();
+  const noteTime = (n: MyNote) => n.updateTime || n.createTime;
   [...(cloud.myNotes || []), ...(local.myNotes || [])].forEach(note => {
-    noteMap.set(note.id, note);
+    const existing = noteMap.get(note.id);
+    if (!existing || noteTime(note) >= noteTime(existing)) {
+      noteMap.set(note.id, note);
+    }
   });
   const myNotes = [...noteMap.values()]
     .sort((a, b) => b.id - a.id)
@@ -226,6 +230,7 @@ export function addNote(verseId: number, content: string, tags?: string[]): Lear
     verseId,
     content,
     createTime: getTodayString(),
+    updateTime: getTodayString(),
     tags: tags && tags.length > 0 ? tags : undefined
   };
   progress.myNotes.unshift(note);
@@ -247,6 +252,7 @@ export function updateNote(noteId: number, content: string, tags?: string[]): Le
   }
   note.content = content;
   note.tags = tags && tags.length > 0 ? tags : undefined;
+  note.updateTime = getTodayString();
   if (!saveProgress(progress)) {
     throw new Error('保存失败，请重试');
   }

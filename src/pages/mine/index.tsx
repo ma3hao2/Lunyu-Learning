@@ -279,7 +279,7 @@ const MinePage: React.FC = () => {
                   {note.tags && note.tags.length > 0 && (
                     <View className={styles.noteTags}>
                       {note.tags.map((tag, idx) => (
-                        <Text key={idx} className={styles.noteTag}>{tag}</Text>
+                        <Text key={`${tag}-${idx}`} className={styles.noteTag}>{tag}</Text>
                       ))}
                     </View>
                   )}

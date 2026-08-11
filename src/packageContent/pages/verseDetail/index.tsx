@@ -299,7 +299,7 @@ const VerseDetailPage: React.FC = () => {
               {note.tags && note.tags.length > 0 && (
                 <View className={styles.myNoteTags}>
                   {note.tags.map((tag, idx) => (
-                    <Text key={idx} className={styles.myNoteTag}>{tag}</Text>
+                    <Text key={`${tag}-${idx}`} className={styles.myNoteTag}>{tag}</Text>
                   ))}
                 </View>
               )}

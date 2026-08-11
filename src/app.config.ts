@@ -19,6 +19,17 @@ export default defineAppConfig({
       ]
     }
   ],
+  // 分包预下载：首页/论语页是主入口，进入后预下载章句详情分包，消除首跳白屏
+  preloadRule: {
+    'pages/home/index': {
+      network: 'all',
+      packages: ['packageContent']
+    },
+    'pages/classics/index': {
+      network: 'all',
+      packages: ['packageContent']
+    }
+  },
   // 组件按需注入：微信代码质量检查要求启用（微信开发者平台"代码质量"未通过项）
   // 已知坑：开发者工具内 Taro 分包页面经主包 base.wxml 引用主包 comp 组件时，
   // 某些工具/基础库版本会白屏或报 wx://not-found，真机正常（详见 docs/开发记录）。

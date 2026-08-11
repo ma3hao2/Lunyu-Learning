@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, Input, ScrollView } from '@tarojs/components';
-import Taro, { useDidShow } from '@tarojs/taro';
+import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import styles from './index.module.scss';
 import NoteCard from '@/components/NoteCard';
 import { fetchPublishedNotes, likePublishedNote, unlikePublishedNote } from '@/services/auth';
@@ -62,6 +62,14 @@ const InsightsPage: React.FC = () => {
       return;
     }
     loadNotes(debouncedSearchText.trim(), 0, false);
+  });
+
+  // 下拉刷新：重置列表从第一页加载
+  usePullDownRefresh(async () => {
+    setLoading(true);
+    setHasMore(true);
+    await loadNotes(debouncedSearchText.trim(), 0, false);
+    Taro.stopPullDownRefresh();
   });
 
   // 下滑加载更多

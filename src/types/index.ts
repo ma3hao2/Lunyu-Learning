@@ -42,6 +42,7 @@ export interface MyNote {
   verseId: number;
   content: string;
   createTime: string;
+  updateTime?: string;   // 最后修改时间 (YYYY-MM-DD)，跨设备合并时按此判断最新版本
   tags?: string[];  // 笔记标签
   isPublic?: boolean;    // 是否公开到社区
   cloudNoteId?: string;  // 云端文档 _id（发布成功后保存，用于编辑/取消发布联动）

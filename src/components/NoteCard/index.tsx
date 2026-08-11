@@ -34,7 +34,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onLike, onClick }) => {
       {note.tags.length > 0 && (
         <View className={styles.tagRow}>
           {note.tags.map((tag, idx) => (
-            <Text key={idx} className={styles.tag}>{tag}</Text>
+            <Text key={`${tag}-${idx}`} className={styles.tag}>{tag}</Text>
           ))}
         </View>
       )}
