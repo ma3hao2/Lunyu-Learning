@@ -41,6 +41,8 @@ function makeFakeDb(config: any = {}) {
         return chain;
       },
       async get() {
+        // getError 用于模拟集合不存在等异常场景（如 notes_likes 未创建）
+        if (colConfig.getError) throw colConfig.getError;
         return { data: colConfig.list || [] };
       },
       async remove() {
@@ -256,5 +258,47 @@ describe('publishNote 点赞逻辑（COM-023 like/unlike）', () => {
     expect(res.message).toBe('未点赞过');
     expect(calls.remove.filter(c => c.collection === 'notes_likes')).toHaveLength(0);
     expect(calls.update.filter(c => c.collection === 'notes')).toHaveLength(0);
+  });
+});
+
+describe('publishNote 容错（notes_likes 集合缺失，COM 补充）', () => {
+  test('like: notes_likes 集合缺失时返回可操作提示，不抛异常、不写库', async () => {
+    const { db, calls } = makeFakeDb({
+      collections: {
+        notes_likes: { getError: new Error('collection not exists') }
+      }
+    });
+    const res = await likeNote(db, 'me', 'n1');
+    expect(res.code).toBe(-1);
+    expect(res.message).toContain('notes_likes');
+    // 不写入点赞记录、不改 likeCount，整个调用不抛未捕获异常
+    expect(calls.add).toHaveLength(0);
+    expect(calls.update).toHaveLength(0);
+  });
+
+  test('unlike: notes_likes 集合缺失时返回可操作提示，不抛异常、不删不改', async () => {
+    const { db, calls } = makeFakeDb({
+      collections: {
+        notes_likes: { getError: new Error('collection not exists') }
+      }
+    });
+    const res = await unlikeNote(db, 'me', 'n1');
+    expect(res.code).toBe(-1);
+    expect(res.message).toContain('notes_likes');
+    expect(calls.remove).toHaveLength(0);
+    expect(calls.update).toHaveLength(0);
+  });
+
+  test('list: notes_likes 集合缺失时仍返回列表，点赞状态降级为全部未赞', async () => {
+    const { db } = makeFakeDb({
+      collections: {
+        notes: { list: [makeNote({ _id: 'n1' }), makeNote({ _id: 'n2' })] },
+        notes_likes: { getError: new Error('collection not exists') }
+      }
+    });
+    const res = await listNotes(db, { skip: 0, limit: 20, openId: 'me' });
+    expect(res.code).toBe(0);
+    expect(res.data.list).toHaveLength(2);
+    expect(res.data.list.every((n: any) => n.likedByMe === false)).toBe(true);
   });
 });

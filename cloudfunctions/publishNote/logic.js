@@ -41,14 +41,18 @@ async function listNotes(db, params) {
     .field(PUBLIC_FIELDS)
     .get();
 
-  // 查询当前用户的点赞状态
+  // 查询当前用户的点赞状态（notes_likes 集合可能未创建，失败时降级为全部未赞，不阻塞列表）
   const noteIds = res.data.map(n => n._id);
   let likedSet = new Set();
   if (noteIds.length > 0) {
-    const likesRes = await db.collection('notes_likes')
-      .where({ noteId: _.in(noteIds), _openid: openId })
-      .get();
-    likedSet = new Set(likesRes.data.map(l => l.noteId));
+    try {
+      const likesRes = await db.collection('notes_likes')
+        .where({ noteId: _.in(noteIds), _openid: openId })
+        .get();
+      likedSet = new Set(likesRes.data.map(l => l.noteId));
+    } catch (e) {
+      console.warn('[listNotes] notes_likes 查询失败（集合可能未创建），点赞状态降级为全部未赞:', e.message);
+    }
   }
 
   const list = res.data.map(n => ({
@@ -68,13 +72,24 @@ async function listNotes(db, params) {
 
 /**
  * 点赞（同一用户对同一笔记只能赞一次）
+ * notes_likes 集合未创建时返回可操作提示，避免未捕获异常导致整个云函数失败
  */
 async function likeNote(db, openId, noteId) {
   const _ = db.command;
-  const existed = await db.collection('notes_likes')
-    .where({ noteId, _openid: openId })
-    .get();
-  if (existed.data.length > 0) {
+  let existed = [];
+  try {
+    const res = await db.collection('notes_likes')
+      .where({ noteId, _openid: openId })
+      .get();
+    existed = res.data;
+  } catch (e) {
+    console.warn('[likeNote] notes_likes 查询失败（集合可能未创建）:', e.message);
+    return {
+      code: -1,
+      message: '点赞功能未就绪：请先在云开发控制台创建 notes_likes 集合，并重新部署 publishNote 云函数'
+    };
+  }
+  if (existed.length > 0) {
     return { code: 0, message: '已点赞过' };
   }
   await db.collection('notes_likes').add({
@@ -88,13 +103,24 @@ async function likeNote(db, openId, noteId) {
 
 /**
  * 取消点赞（未点赞过则幂等返回）
+ * notes_likes 集合未创建时同样容错返回提示
  */
 async function unlikeNote(db, openId, noteId) {
   const _ = db.command;
-  const existed = await db.collection('notes_likes')
-    .where({ noteId, _openid: openId })
-    .get();
-  if (existed.data.length === 0) {
+  let existed = [];
+  try {
+    const res = await db.collection('notes_likes')
+      .where({ noteId, _openid: openId })
+      .get();
+    existed = res.data;
+  } catch (e) {
+    console.warn('[unlikeNote] notes_likes 查询失败（集合可能未创建）:', e.message);
+    return {
+      code: -1,
+      message: '点赞功能未就绪：请先在云开发控制台创建 notes_likes 集合，并重新部署 publishNote 云函数'
+    };
+  }
+  if (existed.length === 0) {
     return { code: 0, message: '未点赞过' };
   }
   await db.collection('notes_likes')
