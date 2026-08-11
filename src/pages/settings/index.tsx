@@ -89,7 +89,10 @@ const SettingsPage: React.FC = () => {
     }
     Taro.showToast({ title: message, icon, duration: 2000 });
     setTimeout(() => {
-      Taro.navigateBack();
+      // 用户可能已手动返回，栈深不足时不重复导航
+      if (Taro.getCurrentPages().length > 1) {
+        Taro.navigateBack();
+      }
     }, 2000);
   }, []);
 

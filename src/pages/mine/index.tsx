@@ -7,7 +7,7 @@ import ProgressBar from '@/components/ProgressBar';
 import { getProgress, saveProgress, mergeProgress, hasProgressData, clearAnonymousProgress, deleteNote, setNotePublic, setNotePrivate } from '@/utils/storage';
 import { versesIndex } from '@/data/versesIndex';
 import { chapters } from '@/data/chapters';
-import { getUserInfo, isLoggedIn, wxLogin, logout, downloadProgress, uploadProgress, unpublishNote, publishNote } from '@/services/auth';
+import { getUserInfo, wxLogin, logout, downloadProgress, uploadProgress, unpublishNote, publishNote } from '@/services/auth';
 import type { UserInfo, MyNote } from '@/types';
 
 const MinePage: React.FC = () => {
@@ -15,10 +15,14 @@ const MinePage: React.FC = () => {
   const [user, setUser] = useState<UserInfo | null>(getUserInfo());
   const [logging, setLogging] = useState(false);
   const [showAllNotes, setShowAllNotes] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
 
   useDidShow(() => {
     setProgress(getProgress());
-    setUser(getUserInfo());
+    const u = getUserInfo();
+    setUser(u);
+    // 用户信息刷新（换头像等）时重置头像加载失败标记
+    setAvatarFailed(false);
   });
 
   const readCount = progress.readVerseIds.length;
@@ -31,7 +35,7 @@ const MinePage: React.FC = () => {
     );
   }, [progress]);
 
-  const loggedIn = isLoggedIn();
+  const loggedIn = user !== null;
 
   // 微信一键登录
   const handleLogin = useCallback(async () => {
@@ -193,8 +197,14 @@ const MinePage: React.FC = () => {
         {loggedIn && user ? (
           <View className={styles.userInfo}>
             <View className={styles.avatar}>
-              {user.avatarUrl ? (
-                <Image className={styles.avatarImg} src={user.avatarUrl} mode="aspectFill" />
+              {user.avatarUrl && !avatarFailed ? (
+                <Image
+                  className={styles.avatarImg}
+                  src={user.avatarUrl}
+                  mode="aspectFill"
+                  lazyLoad
+                  onError={() => setAvatarFailed(true)}
+                />
               ) : (
                 <Text className={styles.avatarText}>
                   {(user.nickName || '学').charAt(0)}

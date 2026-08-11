@@ -12,11 +12,13 @@ const HomePage: React.FC = () => {
   const [readCount, setReadCount] = useState(0);
   const [totalReadDays, setTotalReadDays] = useState(1);
   const [noteCount, setNoteCount] = useState(() => getProgress().myNotes.length);
+  const [readVerseIds, setReadVerseIds] = useState<number[]>([]);
   const [dailyRecommend, setDailyRecommend] = useState(() => getTodayRecommend());
 
   const refreshProgress = useCallback(() => {
     const progress = getProgress();
     setReadCount(progress.readVerseIds.length);
+    setReadVerseIds(progress.readVerseIds);
     setTotalReadDays(progress.totalReadDays || 1);
     setNoteCount(progress.myNotes.length);
   }, []);
@@ -47,12 +49,11 @@ const HomePage: React.FC = () => {
   }, []);
 
   const readChapters = useMemo(() => {
-    const progress = getProgress();
     const readChapterIds = new Set(
-      versesIndex.filter(v => progress.readVerseIds.includes(v.id)).map(v => v.chapterId)
+      versesIndex.filter(v => readVerseIds.includes(v.id)).map(v => v.chapterId)
     );
     return readChapterIds.size;
-  }, [readCount]);
+  }, [readVerseIds]);
 
   const handleDailyClick = () => {
     if (!dailyVerse) return;
@@ -148,8 +149,8 @@ const HomePage: React.FC = () => {
             <Text className={styles.quickIconText}>记</Text>
           </View>
           <View className={styles.quickInfo}>
-            <Text className={styles.quickName}>我的笔记</Text>
-            <Text className={styles.quickDesc}>记录心得</Text>
+            <Text className={styles.quickName}>个人中心</Text>
+            <Text className={styles.quickDesc}>学习数据</Text>
           </View>
         </View>
         <View className={styles.quickItem} onClick={() => Taro.navigateTo({ url: '/pages/settings/index' })}>

@@ -30,6 +30,8 @@ const InsightsPage: React.FC = () => {
   const reqSeqRef = useRef(0);
   // 首屏初始化标记：避免 useEffect 与 useDidShow 首次双发请求
   const initedRef = useRef(false);
+  // 同步最新 notes 到 ref，供 handleClick 使用（避免回调依赖 notes 导致频繁重建）
+  const notesRef = useRef<PublishedNote[]>([]);
 
   // 拉取公开心得列表（关键词搜索由云函数 RegExp 处理）
   const loadNotes = useCallback(async (keyword = '', skip = 0, append = false) => {
@@ -42,7 +44,11 @@ const InsightsPage: React.FC = () => {
       });
       // 丢弃过期请求的结果（期间已发起新的搜索/翻页）
       if (seq !== reqSeqRef.current) return;
-      setNotes(prev => append ? [...prev, ...list] : list);
+      setNotes(prev => {
+        const next = append ? [...prev, ...list] : list;
+        notesRef.current = next;
+        return next;
+      });
       setHasMore(more);
       setLoading(false);
       setRefreshing(false);
@@ -118,12 +124,13 @@ const InsightsPage: React.FC = () => {
   }, []);
 
   // 点击心得卡片：跳到对应章句详情
+  // 从 ref 读最新列表，回调依赖为空（稳定引用，避免翻页后重建引发子组件重渲染）
   const handleClick = useCallback((noteId: string) => {
-    const note = notes.find(n => n.id === noteId);
+    const note = notesRef.current.find(n => n.id === noteId);
     if (note) {
       Taro.navigateTo({ url: `/packageContent/pages/verseDetail/index?id=${note.verseId}` });
     }
-  }, [notes]);
+  }, []);
 
   const isSearching = debouncedSearchText.trim().length > 0;
 

@@ -41,6 +41,8 @@ const VerseDetailPage: React.FC = () => {
 
   const [verse, setVerse] = useState<Verse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [retryTick, setRetryTick] = useState(0); // 重试计数，变化时重新触发加载
   const [myNotes, setMyNotes] = useState<MyNote[]>([]);
   const [fontSize, setFontSize] = useState<FontSize>(() => getSettings().fontSize);
 
@@ -52,6 +54,7 @@ const VerseDetailPage: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
+    setLoadFailed(false);
     (async () => {
       try {
         let v = await loadVerse(verseId);
@@ -68,6 +71,7 @@ const VerseDetailPage: React.FC = () => {
         console.error('[VerseDetail] Load verse failed:', error);
         if (!cancelled) {
           setLoading(false);
+          setLoadFailed(true);
           Taro.showToast({
             title: '加载失败，请重试',
             icon: 'none',
@@ -77,7 +81,7 @@ const VerseDetailPage: React.FC = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [verseId, refreshNotes]);
+  }, [verseId, refreshNotes, retryTick]);
 
   const chapter = useMemo(() => {
     if (!verse) return null;
@@ -224,7 +228,23 @@ const VerseDetailPage: React.FC = () => {
         bounces
       >
         <View className={styles.originalCard}>
-          <Text className={styles.originalText}>加载中...</Text>
+          {loadFailed ? (
+            <>
+              <Text className={styles.originalText}>加载失败，请检查网络</Text>
+              <View
+                className={styles.actionBtnSecondary}
+                style={{ marginTop: 24 }}
+                onClick={() => {
+                  setLoading(true);
+                  setRetryTick(t => t + 1);
+                }}
+              >
+                <Text>重试</Text>
+              </View>
+            </>
+          ) : (
+            <Text className={styles.originalText}>加载中...</Text>
+          )}
         </View>
       </ScrollView>
     );

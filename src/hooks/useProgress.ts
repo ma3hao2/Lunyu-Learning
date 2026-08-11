@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useDidShow } from '@tarojs/taro';
 import { LearningProgress } from '@/types';
 import { getProgress, markVerseRead } from '@/utils/storage';
@@ -6,6 +6,12 @@ import { getProgress, markVerseRead } from '@/utils/storage';
 // 学习进度管理 Hook
 export function useProgress() {
   const [progress, setProgress] = useState<LearningProgress>(getProgress());
+
+  // 预构建已读 Set，isRead 查表 O(1)，避免每次 includes 全表扫描
+  const readSet = useMemo(
+    () => new Set(progress.readVerseIds),
+    [progress.readVerseIds]
+  );
 
   useEffect(() => {
     setProgress(getProgress());
@@ -29,10 +35,10 @@ export function useProgress() {
     refresh();
   });
 
-  // 检查是否已读
+  // 检查是否已读（依赖 readSet，Set 仅在 readVerseIds 变化时重建）
   const isRead = useCallback((verseId: number) => {
-    return progress.readVerseIds.includes(verseId);
-  }, [progress]);
+    return readSet.has(verseId);
+  }, [readSet]);
 
   return {
     progress,

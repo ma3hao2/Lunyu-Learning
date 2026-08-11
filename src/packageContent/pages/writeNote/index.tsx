@@ -188,7 +188,10 @@ const WriteNotePage: React.FC = () => {
       icon: cloudError ? 'none' : 'success'
     });
     setTimeout(() => {
-      Taro.navigateBack();
+      // 用户可能已手动返回，栈深不足时不重复导航
+      if (Taro.getCurrentPages().length > 1) {
+        Taro.navigateBack();
+      }
     }, 1500);
   };
 
