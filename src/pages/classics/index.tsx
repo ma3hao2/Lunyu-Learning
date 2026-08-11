@@ -56,10 +56,27 @@ const ClassicsPage: React.FC = () => {
     return ['全部', ...uniqueThemes];
   }, []);
 
-  // 计算每篇已读句数
-  const getReadCount = (chapterId: number): number => {
-    return versesIndex.filter(v => v.chapterId === chapterId && readVerseIds.includes(v.id)).length;
-  };
+  // 预构建篇章 id -> Chapter 映射（搜索结果渲染时避免反复 chapters.find）
+  const chapterMap = useMemo(() => {
+    const m = new Map<number, typeof chapters[number]>();
+    chapters.forEach(c => m.set(c.id, c));
+    return m;
+  }, []);
+
+  // 预构建每篇已读句数（用 Set 加速 includes，避免每篇章全量扫描 versesIndex）
+  const readCountMap = useMemo(() => {
+    const readSet = new Set(readVerseIds);
+    const m = new Map<number, number>();
+    for (const v of versesIndex) {
+      if (readSet.has(v.id)) {
+        m.set(v.chapterId, (m.get(v.chapterId) || 0) + 1);
+      }
+    }
+    return m;
+  }, [readVerseIds]);
+
+  // 计算每篇已读句数（O(1) 查 Map）
+  const getReadCount = (chapterId: number): number => readCountMap.get(chapterId) || 0;
 
   // 过滤篇章（按关键词和主题）
   const filteredChapters = useMemo(() => {
@@ -154,7 +171,7 @@ const ClassicsPage: React.FC = () => {
             <Text className={styles.sectionCount}>共{totalVerseMatches}条</Text>
           </View>
           {allResults.slice(0, displayCount).map(result => {
-            const chapter = chapters.find(c => c.id === result.chapterId);
+            const chapter = chapterMap.get(result.chapterId);
             return (
               <View
                 key={result.id}

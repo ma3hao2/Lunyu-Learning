@@ -4,6 +4,8 @@ import { chapters } from './chapters';
 
 // 缓存已加载的篇章数据
 const chapterCache = new Map<number, Verse[]>();
+// 缓存全量合并数据（深度搜索每次输入都会调用，避免重复拼装 509 元素数组）
+let allVersesCache: Verse[] | null = null;
 
 // 异步加载某篇完整数据
 export async function loadChapter(chapterId: number): Promise<Verse[]> {
@@ -49,11 +51,15 @@ export async function loadVerse(verseId: number): Promise<Verse | null> {
 
 // 异步加载全部篇章完整数据（用于深度搜索 commentary），利用已有缓存
 export async function loadAllVerses(): Promise<Verse[]> {
+  if (allVersesCache) {
+    return allVersesCache;
+  }
   const all: Verse[] = [];
   for (const ch of chapters) {
     const verses = await loadChapter(ch.id);
     all.push(...verses);
   }
+  allVersesCache = all;
   return all;
 }
 
