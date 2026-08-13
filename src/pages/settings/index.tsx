@@ -110,7 +110,7 @@ const SettingsPage: React.FC = () => {
   const handleAbout = () => {
     Taro.showModal({
       title: '关于论语学习',
-      content: '版本：1.0.0\n\n一款专注于《论语》学习的微信小程序，提供原文、译文、注释解读及学习心得功能。\n\n数据来源：和合文化屋公众号（见「数据来源」入口复制链接）',
+      content: '版本：1.0.0\n\n一款专注于《论语》学习的微信小程序，提供原文、译文、注释解读及学习笔记功能。\n\n数据来源：和合文化屋公众号（见「数据来源」入口复制链接）',
       showCancel: false,
       confirmText: '知道了'
     });
@@ -199,37 +199,9 @@ const SettingsPage: React.FC = () => {
         </View>
       </View>
 
-      {/* 隐私与社区 */}
+      {/* 隐私 */}
       <View className={styles.section}>
-        <Text className={styles.sectionTitle}>隐私与社区</Text>
-        <View className={styles.menuItem}>
-          <View className={styles.menuIcon}>
-            <Text className={styles.menuIconText}>公</Text>
-          </View>
-          <View className={styles.menuInfo}>
-            <Text className={styles.menuText}>新心得默认公开发布</Text>
-            <Text className={styles.menuDesc}>写心得时发布开关的默认值</Text>
-          </View>
-          <Switch
-            checked={settings.defaultPublic}
-            onChange={(e) => applySettings({ defaultPublic: e.detail.value })}
-            color="#b8612d"
-          />
-        </View>
-        <View className={styles.menuItem}>
-          <View className={styles.menuIcon}>
-            <Text className={styles.menuIconText}>匿</Text>
-          </View>
-          <View className={styles.menuInfo}>
-            <Text className={styles.menuText}>公开心得使用匿名昵称</Text>
-            <Text className={styles.menuDesc}>开启后显示「论语学习者」</Text>
-          </View>
-          <Switch
-            checked={settings.anonymousNickname}
-            onChange={(e) => applySettings({ anonymousNickname: e.detail.value })}
-            color="#b8612d"
-          />
-        </View>
+        <Text className={styles.sectionTitle}>隐私</Text>
         <View className={styles.menuItem} onClick={handlePrivacy}>
           <View className={styles.menuIcon}>
             <Text className={styles.menuIconText}>隐</Text>
@@ -294,7 +266,7 @@ const SettingsPage: React.FC = () => {
           <View className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <Text className={styles.modalTitle}>确认清空</Text>
             <Text className={styles.modalContent}>
-              将清空已读记录、点赞与本地笔记，且无法恢复。已发布的公开心得不受影响，如需删除请先取消公开。确定继续吗？
+              将清空已读记录、点赞与本地笔记，且无法恢复。确定继续吗？
             </Text>
             <View className={styles.modalActions}>
               <View className={styles.modalBtnCancel} onClick={cancelClear}>

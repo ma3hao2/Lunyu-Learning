@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Textarea, Input, Switch } from '@tarojs/components';
+import { View, Text, Textarea, Input } from '@tarojs/components';
 import type { TextareaProps, BaseEventOrig } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import { loadVerse, versesIndex } from '@/data/versesLoader';
-import { chapters } from '@/data/chapters';
 import type { Verse } from '@/types';
-import { addNote, updateNote, getNoteById, setNotePublic, setNotePrivate } from '@/utils/storage';
-import { isLoggedIn, publishNote, unpublishNote, editPublishedNote } from '@/services/auth';
+import { addNote, updateNote, getNoteById } from '@/utils/storage';
 import { getSettings, type FontSize } from '@/utils/settings';
 
 const WriteNotePage: React.FC = () => {
@@ -23,8 +21,6 @@ const WriteNotePage: React.FC = () => {
 
   const [content, setContent] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  // 是否公开发布到社区
-  const [isPublic, setIsPublic] = useState<boolean>(() => getSettings().defaultPublic);
   const [fontSize] = useState<FontSize>(() => getSettings().fontSize);
   // 用 ref 同步保存最新内容，避免 React state 异步更新导致提交时取到旧值
   const contentRef = useRef('');
@@ -45,7 +41,6 @@ const WriteNotePage: React.FC = () => {
             contentRef.current = existingNote.content;
             setContent(existingNote.content);
             setSelectedTags(existingNote.tags || []);
-            setIsPublic(!!existingNote.isPublic);
           }
         }
         // 加载章句原文
@@ -117,20 +112,13 @@ const WriteNotePage: React.FC = () => {
     // 从 ref 取最新内容，避免 state 未刷新
     const text = contentRef.current.trim();
     if (!text) {
-      Taro.showToast({ title: '请输入心得内容', icon: 'none' });
+      Taro.showToast({ title: '请输入笔记内容', icon: 'none' });
       return;
     }
     if (submitting) return;
     setSubmitting(true);
 
-    // 未登录却勾选了公开发布：提示需先登录
-    if (isPublic && !isLoggedIn()) {
-      Taro.showToast({ title: '公开发布需先登录', icon: 'none' });
-      setSubmitting(false);
-      return;
-    }
-
-    // 1. 本地保存（必须成功，不因云端失败而回滚）
+    // 本地保存（笔记仅存本机，登录与否均可写）
     let savedNoteId: number;
     try {
       if (isEditing && noteId !== null) {
@@ -151,69 +139,10 @@ const WriteNotePage: React.FC = () => {
       return;
     }
 
-    // 2. 云端联动（发布/取消/编辑已发布内容）：失败不阻塞本地保存，仅提示
-    let cloudError: string | null = null;
-    if (isLoggedIn()) {
-      try {
-        const existingNote = getNoteById(savedNoteId);
-        const cloudNoteId = existingNote?.cloudNoteId;
-        if (isPublic) {
-          if (cloudNoteId) {
-            // 已是公开：更新云端内容
-            await editPublishedNote(cloudNoteId, text, selectedTags);
-          } else {
-            // 新发布：创建云端文档
-            const verseInfo = versesIndex.find(v => v.id === verseId);
-            const chapterTitle = verseInfo
-              ? (chapters.find(c => c.id === verseInfo.chapterId)?.title || '')
-              : '';
-            const newId = await publishNote({
-              verseId,
-              verseOriginal: verseInfo?.original || '',
-              chapterTitle,
-              content: text,
-              tags: selectedTags
-            });
-            setNotePublic(savedNoteId, newId);
-          }
-        } else if (cloudNoteId) {
-          // 取消公开：删除云端文档
-          await unpublishNote(cloudNoteId);
-          setNotePrivate(savedNoteId);
-        }
-      } catch (e: any) {
-        console.warn('[WriteNote] 云端发布失败（已保存到本地）:', e);
-        cloudError = e?.message || '发布失败';
-      }
-    }
-
-    // 3. 提示：本地已保存成功；云端若失败则透传具体原因（如内容安全检查未通过）
     Taro.showToast({
-      title: cloudError
-        ? `已保存到本地：${cloudError}`
-        : (isEditing ? '更新成功' : '保存成功'),
-      icon: cloudError ? 'none' : 'success'
+      title: isEditing ? '更新成功' : '保存成功',
+      icon: 'success'
     });
-
-    // 4. 引导（P2-4）：新公开发布成功后询问是否去社区查看
-    if (isPublic && !cloudError && !isEditing) {
-      setTimeout(() => {
-        Taro.showModal({
-          title: '发布成功',
-          content: '已发布到社区，去看看？',
-          confirmText: '去看看',
-          cancelText: '返回',
-          success: (res) => {
-            if (res.confirm) {
-              Taro.switchTab({ url: '/pages/insights/index' });
-            } else if (Taro.getCurrentPages().length > 1) {
-              Taro.navigateBack();
-            }
-          }
-        });
-      }, 400);
-      return;
-    }
 
     setTimeout(() => {
       // 用户可能已手动返回，栈深不足时不重复导航
@@ -239,7 +168,7 @@ const WriteNotePage: React.FC = () => {
 
       {/* 编辑区 */}
       <View className={styles.editorCard}>
-        <Text className={styles.editorTitle}>{isEditing ? '编辑心得' : '我的心得'}</Text>
+        <Text className={styles.editorTitle}>{isEditing ? '编辑笔记' : '我的笔记'}</Text>
         <Textarea
           className={styles.textarea}
           placeholder="写下你对这段论语的学习感悟..."
@@ -295,23 +224,10 @@ const WriteNotePage: React.FC = () => {
         </View>
       </View>
 
-      {/* 公开发布开关 */}
-      <View className={styles.publishRow}>
-        <View className={styles.publishInfo}>
-          <Text className={styles.publishLabel}>公开发布到社区</Text>
-          <Text className={styles.publishDesc}>其他用户可在"学习心得"中看到并点赞你的心得</Text>
-        </View>
-        <Switch
-          checked={isPublic}
-          onChange={(e) => setIsPublic(e.detail.value)}
-          color="#B8612D"
-        />
-      </View>
-
       {/* 提交按钮 */}
       <View className={styles.submitBtn} onClick={handleSubmit}>
         <Text className={styles.submitBtnText}>
-          {submitting ? '保存中...' : isEditing ? '更新心得' : '保存心得'}
+          {submitting ? '保存中...' : isEditing ? '更新笔记' : '保存笔记'}
         </Text>
       </View>
     </View>

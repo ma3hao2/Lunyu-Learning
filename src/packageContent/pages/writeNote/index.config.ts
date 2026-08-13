@@ -1,4 +1,4 @@
 export default definePageConfig({
-  navigationBarTitleText: '写心得',
+  navigationBarTitleText: '写笔记',
   backgroundTextStyle: 'dark'
 })

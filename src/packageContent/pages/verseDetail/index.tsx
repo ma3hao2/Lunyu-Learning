@@ -3,14 +3,12 @@ import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { useRouter, useDidShow, useShareAppMessage } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
-import NoteCard from '@/components/NoteCard';
 import Skeleton from '@/components/Skeleton';
 import { loadVerse, versesIndex } from '@/data/versesLoader';
-import type { Verse, MyNote, PublishedNote } from '@/types';
+import type { Verse, MyNote } from '@/types';
 import { chapters } from '@/data/chapters';
 import { useProgress } from '@/hooks/useProgress';
-import { getProgress, deleteNote, togglePublishedNoteLike } from '@/utils/storage';
-import { unpublishNote, fetchPublishedNotes, likePublishedNote, unlikePublishedNote, isLoggedIn } from '@/services/auth';
+import { getProgress, deleteNote } from '@/utils/storage';
 import { getSettings, saveSettings, type FontSize } from '@/utils/settings';
 
 // 将文本中的换行符（支持 \n 字面量和真实换行）拆分为行数组渲染
@@ -93,24 +91,8 @@ const VerseDetailPage: React.FC = () => {
     return chapters.find(c => c.id === verse.chapterId);
   }, [verse]);
 
-  // 该章句的公开心得（从云端拉取）
-  const [relatedNotes, setRelatedNotes] = useState<PublishedNote[]>([]);
-  const [relatedLoading, setRelatedLoading] = useState(true);
-
-  const loadRelatedNotes = useCallback(async () => {
-    try {
-      const { list } = await fetchPublishedNotes({ verseId, limit: 50 });
-      setRelatedNotes(list);
-    } catch (e) {
-      console.warn('[VerseDetail] 加载相关心得失败:', e);
-    } finally {
-      setRelatedLoading(false);
-    }
-  }, [verseId]);
-
   useDidShow(() => {
     refreshNotes();
-    loadRelatedNotes();
     setFontSize(getSettings().fontSize);
   });
 
@@ -151,7 +133,6 @@ const VerseDetailPage: React.FC = () => {
     setVerseId(prevVerseId);
     setLoading(true);
     setVerse(null);
-    setRelatedLoading(true);
   }, [prevVerseId]);
 
   const goNextVerse = useCallback(() => {
@@ -159,7 +140,6 @@ const VerseDetailPage: React.FC = () => {
     setVerseId(nextVerseId);
     setLoading(true);
     setVerse(null);
-    setRelatedLoading(true);
   }, [nextVerseId]);
 
   // 跳转到所属篇章
@@ -181,19 +161,12 @@ const VerseDetailPage: React.FC = () => {
   const handleDeleteNote = useCallback((note: MyNote) => {
     Taro.showModal({
       title: '删除笔记',
-      content: '确定要删除这条心得吗？删除后不可恢复。',
+      content: '确定要删除这条笔记吗？删除后不可恢复。',
       confirmColor: '#B8612D',
       success: (res) => {
         if (res.confirm) {
           try {
             deleteNote(note.id);
-            // 已发布到社区的笔记：同步删除云端文档
-            if (note.cloudNoteId) {
-              unpublishNote(note.cloudNoteId).catch(e => {
-                console.warn('[VerseDetail] 云端删除失败（本地已删除）:', e);
-                Taro.showToast({ title: '本地已删除，云端删除失败', icon: 'none' });
-              });
-            }
             Taro.showToast({ title: '已删除', icon: 'success' });
             refreshNotes();
           } catch (e: any) {
@@ -203,40 +176,6 @@ const VerseDetailPage: React.FC = () => {
       }
     });
   }, [refreshNotes]);
-
-  // 点赞/取消点赞公开心得（云端联动 + 本地记录）
-  const handleLike = useCallback(async (noteId: string) => {
-    if (!isLoggedIn()) {
-      Taro.showToast({ title: '请先登录', icon: 'none' });
-      return;
-    }
-    const { liked } = togglePublishedNoteLike(noteId);
-    // 乐观更新
-    setRelatedNotes(prev => prev.map(n =>
-      n.id === noteId
-        ? { ...n, likedByMe: liked, likeCount: n.likeCount + (liked ? 1 : -1) }
-        : n
-    ));
-    try {
-      if (liked) {
-        await likePublishedNote(noteId);
-      } else {
-        await unlikePublishedNote(noteId);
-      }
-    } catch (e) {
-      console.warn('[VerseDetail] 点赞同步失败:', e);
-      setRelatedNotes(prev => prev.map(n =>
-        n.id === noteId
-          ? { ...n, likedByMe: !liked, likeCount: n.likeCount + (liked ? -1 : 1) }
-          : n
-      ));
-      Taro.showToast({ title: '点赞失败，请重试', icon: 'none' });
-    }
-  }, []);
-
-  const handleInsightClick = useCallback((_noteId: string) => {
-    // 相关心得即当前章句的公开心得，点击无需跳转（避免同页自引用堆叠页面栈）
-  }, []);
 
   if (loading || !verse) {
     return (
@@ -326,7 +265,7 @@ const VerseDetailPage: React.FC = () => {
           className={classnames(styles.actionBtn, styles.actionBtnSecondary)}
           onClick={handleWriteNote}
         >
-          <Text>写心得</Text>
+          <Text>写笔记</Text>
         </View>
         <View className={styles.fontSizeGroup}>
           <View
@@ -393,33 +332,7 @@ const VerseDetailPage: React.FC = () => {
           ))
         ) : (
           <View className={styles.emptyTip}>
-            <Text>还没有笔记，点击上方"写心得"记录你的感悟</Text>
-          </View>
-        )}
-      </View>
-
-      {/* 相关心得（云端公开心得） */}
-      <View className={styles.insightSection}>
-        <View className={styles.insightSectionTitle}>
-          <Text className={styles.insightSectionText}>学习心得</Text>
-          <Text className={styles.insightSectionCount}>共{relatedNotes.length}条</Text>
-        </View>
-        {relatedLoading ? (
-          <View className={styles.emptyTip}>
-            <Text>加载中...</Text>
-          </View>
-        ) : relatedNotes.length > 0 ? (
-          relatedNotes.map(note => (
-            <NoteCard
-              key={note.id}
-              note={note}
-              onLike={handleLike}
-              onClick={handleInsightClick}
-            />
-          ))
-        ) : (
-          <View className={styles.emptyTip}>
-            <Text>暂无心得，快来分享第一条吧</Text>
+            <Text>还没有笔记，点击上方"写笔记"记录你的感悟</Text>
           </View>
         )}
       </View>

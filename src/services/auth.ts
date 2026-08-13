@@ -1,5 +1,5 @@
 import Taro from '@tarojs/taro';
-import { UserInfo, LearningProgress, SyncResult, PublishedNote } from '@/types';
+import { UserInfo, LearningProgress, SyncResult } from '@/types';
 import {
   clearPendingSync,
   getProgress,
@@ -12,9 +12,7 @@ import {
 const USER_KEY = 'lunyu_user';
 const isWeapp = process.env.TARO_ENV === 'weapp';
 
-// ============================================
 // 用户信息管理
-// ============================================
 
 // 获取本地缓存的用户信息
 export function getUserInfo(): UserInfo | null {
@@ -54,9 +52,7 @@ export function logout(): void {
   }
 }
 
-// ============================================
 // 微信登录
-// ============================================
 
 /**
  * 微信一键登录
@@ -184,9 +180,7 @@ export async function updateProfile(params: { nickName: string; avatarUrl: strin
   return result.data;
 }
 
-// ============================================
 // 云端数据同步
-// ============================================
 
 /**
  * 上传本地学习进度到云端
@@ -281,9 +275,7 @@ export async function clearCloudProgress(): Promise<SyncResult> {
   }
 }
 
-// ============================================
 // H5 模拟登录（开发调试）
-// ============================================
 
 function mockLogin(openId?: string): UserInfo {
   // 默认固定 openId：H5 调试时模拟"已登录"的持久状态（每次新 openId 会导致进度/点赞数据无法跨刷新保留）；
@@ -298,92 +290,3 @@ function mockLogin(openId?: string): UserInfo {
   return user;
 }
 
-// ============================================
-// 公开心得（社区）
-// ============================================
-
-// publishNote 云函数统一响应结构
-interface CloudNoteResult {
-  code: number;
-  message: string;
-  data?: {
-    id?: string;
-    list?: PublishedNote[];
-    hasMore?: boolean;
-  };
-}
-
-// 调用 publishNote 云函数的通用封装
-async function callPublishNote(action: string, data: Record<string, any> = {}): Promise<CloudNoteResult> {
-  const res = await Taro.cloud.callFunction({
-    name: 'publishNote',
-    data: { action, ...data }
-  });
-  const result = res.result as CloudNoteResult;
-  if (result.code !== 0) {
-    throw new Error(result.message || '操作失败');
-  }
-  return result;
-}
-
-/** 发布心得到社区，返回云端文档 id */
-export async function publishNote(params: {
-  verseId: number;
-  verseOriginal: string;
-  chapterTitle: string;
-  content: string;
-  tags: string[];
-}): Promise<string> {
-  if (!isWeapp) throw new Error('仅小程序环境支持发布');
-  // 隐私合规：发布内容上传云端前，确保用户已同意隐私政策（未授权则弹官方授权框）
-  const authorized = await ensurePrivacyAuthorized();
-  if (!authorized) throw new Error('需同意隐私政策后才能发布');
-  const user = getUserInfo();
-  const result = await callPublishNote('publish', {
-    ...params,
-    authorName: user?.nickName || '论语学习者'
-  });
-  const id = result.data?.id;
-  if (!id) throw new Error('发布失败，请重试');
-  return id;
-}
-
-/** 取消发布（删除云端文档）*/
-export async function unpublishNote(cloudNoteId: string): Promise<void> {
-  if (!isWeapp) return;
-  await callPublishNote('unpublish', { noteId: cloudNoteId });
-}
-
-/** 编辑已发布心得的内容/标签 */
-export async function editPublishedNote(cloudNoteId: string, content: string, tags: string[]): Promise<void> {
-  if (!isWeapp) return;
-  await callPublishNote('edit', { noteId: cloudNoteId, content, tags });
-}
-
-/** 获取公开心得列表（分页）*/
-export async function fetchPublishedNotes(options: {
-  skip?: number;
-  limit?: number;
-  keyword?: string;
-  verseId?: number;
-  tag?: string;
-} = {}): Promise<{ list: PublishedNote[]; hasMore: boolean }> {
-  if (!isWeapp) return { list: [], hasMore: false };
-  const result = await callPublishNote('list', options);
-  return {
-    list: result.data?.list ?? [],
-    hasMore: result.data?.hasMore ?? false
-  };
-}
-
-/** 点赞公开心得 */
-export async function likePublishedNote(noteId: string): Promise<void> {
-  if (!isWeapp) return;
-  await callPublishNote('like', { noteId });
-}
-
-/** 取消点赞公开心得 */
-export async function unlikePublishedNote(noteId: string): Promise<void> {
-  if (!isWeapp) return;
-  await callPublishNote('unlike', { noteId });
-}

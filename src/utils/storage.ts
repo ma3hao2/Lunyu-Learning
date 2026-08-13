@@ -103,7 +103,7 @@ export function mergeProgress(local: LearningProgress, cloud: LearningProgress):
     ...(local.readVerseIds || []),
     ...(cloud.readVerseIds || [])
   ])];
-  // 公开心得点赞：同样并集 + 取消标记剔除
+  // 存量兼容：点赞/取消标记数组并集 + 取消剔除（去 UGC 后不再新增）
   const unlikedNoteIds = [...new Set([
     ...(local.unlikedNoteIds || []),
     ...(cloud.unlikedNoteIds || [])
@@ -333,61 +333,4 @@ export function getNoteById(noteId: number): MyNote | null {
 // 检查句子是否已读
 export function isVerseRead(verseId: number): boolean {
   return getProgress().readVerseIds.includes(verseId);
-}
-
-// ============================================
-// 公开心得点赞（本地状态管理，云端操作由 auth.ts 调用）
-// ============================================
-
-// 切换公开心得的本地点赞状态
-export function togglePublishedNoteLike(noteId: string): { liked: boolean } {
-  const progress = getProgress();
-  if (!Array.isArray(progress.likedNoteIds)) progress.likedNoteIds = [];
-  if (!Array.isArray(progress.unlikedNoteIds)) progress.unlikedNoteIds = [];
-
-  const liked = progress.likedNoteIds.includes(noteId);
-  if (liked) {
-    // 取消点赞
-    progress.likedNoteIds = progress.likedNoteIds.filter(id => id !== noteId);
-    if (!progress.unlikedNoteIds.includes(noteId)) {
-      progress.unlikedNoteIds.push(noteId);
-    }
-  } else {
-    // 点赞
-    progress.likedNoteIds.push(noteId);
-    progress.unlikedNoteIds = progress.unlikedNoteIds.filter(id => id !== noteId);
-  }
-  saveProgress(progress);
-  return { liked: !liked };
-}
-
-// 检查公开心得是否已赞
-export function isPublishedNoteLiked(noteId: string): boolean {
-  return getProgress().likedNoteIds?.includes(noteId) || false;
-}
-
-// ============================================
-// 笔记公开状态（更新本地 MyNote 的 isPublic/cloudNoteId）
-// ============================================
-
-// 标记笔记为已公开，记录云端文档 id
-export function setNotePublic(noteId: number, cloudNoteId: string): void {
-  const progress = getProgress();
-  const note = progress.myNotes.find(n => n.id === noteId);
-  if (note) {
-    note.isPublic = true;
-    note.cloudNoteId = cloudNoteId;
-    saveProgress(progress);
-  }
-}
-
-// 标记笔记为已取消公开
-export function setNotePrivate(noteId: number): void {
-  const progress = getProgress();
-  const note = progress.myNotes.find(n => n.id === noteId);
-  if (note) {
-    note.isPublic = false;
-    note.cloudNoteId = undefined;
-    saveProgress(progress);
-  }
 }

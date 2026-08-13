@@ -36,8 +36,8 @@ export interface LearningProgress {
   lastReadDate?: string;     // 最后学习日期 (YYYY-MM-DD)
   lastReadVerseId?: number;  // 最后阅读的章句 ID（「接着读」续读入口用）
   deletedNoteIds?: number[];    // 已删除笔记 ID（删除标记，跨端同步时防止旧数据复活）
-  likedNoteIds?: string[];      // 已点赞的公开心得 ID（云笔记，string）
-  unlikedNoteIds?: string[];    // 已取消点赞的公开心得 ID（取消标记）
+  likedNoteIds?: string[];      // 存量兼容：历史已点赞的公开心得 ID（去 UGC 后不再新增）
+  unlikedNoteIds?: string[];    // 存量兼容：历史已取消点赞的公开心得 ID（去 UGC 后不再新增）
 }
 
 // 我的笔记
@@ -50,20 +50,6 @@ export interface MyNote {
   tags?: string[];  // 笔记标签
   isPublic?: boolean;    // 是否公开到社区
   cloudNoteId?: string;  // 云端文档 _id（发布成功后保存，用于编辑/取消发布联动）
-}
-
-// 公开心得（社区展示用，从云函数返回，不含 _openid）
-export interface PublishedNote {
-  id: string;              // 云端文档 _id
-  verseId: number;
-  verseOriginal: string;   // 关联章句原文（冗余，列表展示用）
-  chapterTitle: string;    // 篇章标题（冗余）
-  content: string;
-  tags: string[];
-  authorName: string;
-  likeCount: number;
-  createTime: string;
-  likedByMe?: boolean;     // 当前用户是否已赞
 }
 
 // 用户信息

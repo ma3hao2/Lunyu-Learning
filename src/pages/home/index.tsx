@@ -195,18 +195,18 @@ const HomePage: React.FC = () => {
             <Text className={styles.quickDesc}>二十篇全文</Text>
           </View>
         </View>
-        <View className={styles.quickItem} onClick={() => handleNavigate('/pages/insights/index')}>
+        <View className={styles.quickItem} onClick={() => handleNavigate('/pages/mine/index')}>
           <View className={styles.quickIcon}>
-            <Text className={styles.quickIconText}>悟</Text>
+            <Text className={styles.quickIconText}>记</Text>
           </View>
           <View className={styles.quickInfo}>
-            <Text className={styles.quickName}>学习心得</Text>
-            <Text className={styles.quickDesc}>交流感悟</Text>
+            <Text className={styles.quickName}>我的笔记</Text>
+            <Text className={styles.quickDesc}>学习感悟记录</Text>
           </View>
         </View>
         <View className={styles.quickItem} onClick={() => handleNavigate('/pages/mine/index')}>
           <View className={styles.quickIcon}>
-            <Text className={styles.quickIconText}>记</Text>
+            <Text className={styles.quickIconText}>人</Text>
           </View>
           <View className={styles.quickInfo}>
             <Text className={styles.quickName}>个人中心</Text>

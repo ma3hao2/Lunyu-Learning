@@ -25,32 +25,31 @@ const PrivacyPage: React.FC = () => {
 
       <View className={styles.section}>
         <Text className={styles.h3}>1. 我们收集的信息</Text>
-        <Text className={styles.p}>- 学习进度（已读章句、点赞、笔记），默认仅保存在你的设备本地；</Text>
-        <Text className={styles.p}>- 微信登录信息（openId、昵称、头像），用于云端同步学习进度与展示公开心得；</Text>
-        <Text className={styles.p}>- 你主动选择「公开发布」的心得内容、标签与昵称，将展示给其他用户。</Text>
+        <Text className={styles.p}>- 学习进度（已读章句、笔记），默认仅保存在你的设备本地；</Text>
+        <Text className={styles.p}>- 微信登录信息（openId、昵称、头像），用于云端同步学习进度与笔记；</Text>
       </View>
 
       <View className={styles.section}>
         <Text className={styles.h3}>2. 信息的使用</Text>
         <Text className={styles.p}>- 本地数据仅用于在你设备上展示学习进度与笔记；</Text>
-        <Text className={styles.p}>- 云端数据用于多设备同步与公开心得展示；</Text>
+        <Text className={styles.p}>- 云端数据用于多设备同步；</Text>
         <Text className={styles.p}>- 我们不会将你的个人信息出售给任何第三方。</Text>
       </View>
 
       <View className={styles.section}>
         <Text className={styles.h3}>3. 云同步与用户行为统计</Text>
         <Text className={styles.p}>
-          - 云同步：登录后，你的学习进度、笔记与公开心得会上传至云端，用于多设备同步与社区展示。在你同意隐私授权之前，本小程序不会上传任何数据；
+          - 云同步：登录后，你的学习进度与本地笔记会上传至云端，仅用于多设备同步。在你同意隐私授权之前，本小程序不会上传任何数据；
         </Text>
         <Text className={styles.p}>
-          - 用户行为统计：未征得你的同意前，我们不会开启行为数据统计。你首次登录或发布内容时，系统会弹出微信官方隐私授权框，你可以在其中选择同意或拒绝。
+          - 用户行为统计：未征得你的同意前，我们不会开启行为数据统计。你首次登录时，系统会弹出微信官方隐私授权框，你可以在其中选择同意或拒绝。
         </Text>
       </View>
 
       <View className={styles.section}>
         <Text className={styles.h3}>4. 你的权利</Text>
         <Text className={styles.p}>
-          你可以在「设置 → 清空学习数据」清除本地学习数据；已发布的公开心得可在「我的」中取消公开或删除。
+          你可以在「设置 → 清空学习数据」清除本地学习数据。
         </Text>
       </View>
 

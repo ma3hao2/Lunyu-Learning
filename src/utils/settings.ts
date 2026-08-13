@@ -5,8 +5,8 @@ export type FontSize = 'normal' | 'large' | 'xl';
 
 export interface AppSettings {
   fontSize: FontSize;          // 正文字号：标准 / 大 / 特大
-  defaultPublic: boolean;      // 新心得默认公开发布（真社区：writeNote 发布开关初始值）
-  anonymousNickname: boolean;  // 公开心得使用匿名昵称「论语学习者」
+  defaultPublic: boolean;      // 存量兼容：历史默认公开发布设置（去 UGC 后不再使用）
+  anonymousNickname: boolean;  // 存量兼容：历史匿名昵称设置（去 UGC 后不再使用）
   autoSync: boolean;           // 自动同步（保存进度后防抖上传云端）
 }
 

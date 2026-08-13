@@ -137,37 +137,6 @@
   }
 }
 
-// 公开发布开关
-.publishRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: $spacing-lg;
-  padding: $spacing-md $spacing-lg;
-  background: $color-bg-card;
-  border-radius: $radius-md;
-  box-shadow: $shadow-card;
-}
-
-.publishInfo {
-  flex: 1;
-  margin-right: $spacing-md;
-}
-
-.publishLabel {
-  display: block;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  color: $color-text-primary;
-}
-
-.publishDesc {
-  display: block;
-  font-size: $font-size-xs;
-  color: $color-text-tertiary;
-  margin-top: 4rpx;
-}
-
 // 底部按钮
 .submitBtn {
   margin-top: $spacing-lg;

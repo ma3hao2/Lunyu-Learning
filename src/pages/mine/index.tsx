@@ -4,10 +4,10 @@ import Taro, { useDidShow } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import ProgressBar from '@/components/ProgressBar';
-import { getProgress, deleteNote, setNotePublic, setNotePrivate } from '@/utils/storage';
+import { getProgress, deleteNote } from '@/utils/storage';
 import { versesIndex } from '@/data/versesIndex';
 import { chapters } from '@/data/chapters';
-import { getUserInfo, silentLoginAndMerge, logout, updateProfile, unpublishNote, publishNote, ensurePrivacyAuthorized } from '@/services/auth';
+import { getUserInfo, silentLoginAndMerge, logout, updateProfile, ensurePrivacyAuthorized } from '@/services/auth';
 import type { UserInfo, MyNote } from '@/types';
 
 const MinePage: React.FC = () => {
@@ -121,19 +121,12 @@ const MinePage: React.FC = () => {
   const handleDeleteNote = useCallback((note: MyNote) => {
     Taro.showModal({
       title: '删除笔记',
-      content: '确定要删除这条心得吗？删除后不可恢复。',
+      content: '确定要删除这条笔记吗？删除后不可恢复。',
       confirmColor: '#B8612D',
       success: (res) => {
         if (res.confirm) {
           try {
             deleteNote(note.id);
-            // 已发布到社区的笔记：同步删除云端文档，避免"本地删了社区还在"
-            if (note.cloudNoteId) {
-              unpublishNote(note.cloudNoteId).catch(e => {
-                console.warn('[Mine] 云端删除失败（本地已删除）:', e);
-                Taro.showToast({ title: '本地已删除，云端删除失败', icon: 'none' });
-              });
-            }
             Taro.showToast({ title: '已删除', icon: 'success' });
             setProgress(getProgress());
           } catch (e: any) {
@@ -142,49 +135,6 @@ const MinePage: React.FC = () => {
         }
       }
     });
-  }, []);
-
-  // 切换笔记公开状态（云端联动：公开→发布，取消公开→删除云端文档）
-  const handleTogglePublic = useCallback((note: MyNote) => {
-    if (note.isPublic) {
-      // 取消公开
-      if (note.cloudNoteId) {
-        unpublishNote(note.cloudNoteId)
-          .then(() => {
-            setNotePrivate(note.id);
-            setProgress(getProgress());
-            Taro.showToast({ title: '已设为私密', icon: 'success' });
-          })
-          .catch(e => {
-            console.warn('[Mine] 取消公开失败:', e);
-            Taro.showToast({ title: '操作失败，请重试', icon: 'none' });
-          });
-      }
-    } else {
-      // 转为公开
-      const verse = versesIndex.find(v => v.id === note.verseId);
-      if (!verse) {
-        Taro.showToast({ title: '关联章句不存在', icon: 'none' });
-        return;
-      }
-      const chapter = chapters.find(c => c.id === verse.chapterId);
-      publishNote({
-        verseId: note.verseId,
-        verseOriginal: verse.original,
-        chapterTitle: chapter?.title || '',
-        content: note.content,
-        tags: note.tags || []
-      })
-        .then(cloudNoteId => {
-          setNotePublic(note.id, cloudNoteId);
-          setProgress(getProgress());
-          Taro.showToast({ title: '已公开发布', icon: 'success' });
-        })
-        .catch(e => {
-          console.warn('[Mine] 公开发布失败:', e);
-          Taro.showToast({ title: '发布失败，请检查网络', icon: 'none' });
-        });
-    }
   }, []);
 
   const handleMenuClick = (type: string) => {
@@ -198,8 +148,10 @@ const MinePage: React.FC = () => {
       }
     } else if (type === 'classics') {
       Taro.switchTab({ url: '/pages/classics/index' });
-    } else if (type === 'insights') {
-      Taro.switchTab({ url: '/pages/insights/index' });
+    } else if (type === 'notes') {
+      // 我的笔记：本页已有笔记列表，展开全部并定位到笔记区
+      setShowAllNotes(true);
+      Taro.pageScrollTo({ selector: '#notesSection', duration: 300 });
     } else if (type === 'settings') {
       Taro.navigateTo({ url: '/pages/settings/index' });
     }
@@ -271,10 +223,6 @@ const MinePage: React.FC = () => {
             <Text className={styles.statNumber}>{progress.myNotes.length}</Text>
             <Text className={styles.statLabel}>我的笔记</Text>
           </View>
-          <View className={styles.statItem}>
-            <Text className={styles.statNumber}>{progress.likedNoteIds?.length || 0}</Text>
-            <Text className={styles.statLabel}>点赞心得</Text>
-          </View>
         </View>
       </View>
 
@@ -285,7 +233,7 @@ const MinePage: React.FC = () => {
       </View>
 
       {/* 我的笔记 */}
-      <View className={styles.notesSection}>
+      <View id="notesSection" className={styles.notesSection}>
         <View className={styles.sectionHeader}>
           <Text className={styles.sectionTitle}>我的笔记</Text>
           <Text className={styles.sectionCount}>共{progress.myNotes.length}条</Text>
@@ -310,17 +258,10 @@ const MinePage: React.FC = () => {
                   )}
                   <View className={styles.noteFooter}>
                     <Text className={styles.noteTime}>{note.createTime}</Text>
-                    {note.isPublic && <Text className={styles.notePublicBadge}>公开</Text>}
                     {verse && <Text className={styles.noteSource}>出自：{verse.original.substring(0, 12)}...</Text>}
                   </View>
                   <View className={styles.noteActions}>
                     <Text className={styles.noteAction} onClick={(e) => { e.stopPropagation(); handleEditNote(note); }}>编辑</Text>
-                    <Text
-                      className={classnames(styles.noteAction, note.isPublic && styles.noteActionPublic)}
-                      onClick={(e) => { e.stopPropagation(); handleTogglePublic(note); }}
-                    >
-                      {note.isPublic ? '取消公开' : '公开'}
-                    </Text>
                     <Text className={styles.noteActionDelete} onClick={(e) => { e.stopPropagation(); handleDeleteNote(note); }}>删除</Text>
                   </View>
                 </View>
@@ -334,7 +275,7 @@ const MinePage: React.FC = () => {
           </>
         ) : (
           <View className={styles.emptyNotes}>
-            <Text>还没有笔记，去学习后写第一条心得吧</Text>
+            <Text>还没有笔记，去学习后写第一条笔记吧</Text>
           </View>
         )}
       </View>
@@ -348,11 +289,11 @@ const MinePage: React.FC = () => {
           <Text className={styles.menuText}>继续阅读</Text>
           <Text className={styles.menuArrow}>›</Text>
         </View>
-        <View className={styles.menuItem} onClick={() => handleMenuClick('insights')}>
+        <View className={styles.menuItem} onClick={() => handleMenuClick('notes')}>
           <View className={styles.menuIcon}>
-            <Text className={styles.menuIconText}>悟</Text>
+            <Text className={styles.menuIconText}>记</Text>
           </View>
-          <Text className={styles.menuText}>浏览心得</Text>
+          <Text className={styles.menuText}>我的笔记</Text>
           <Text className={styles.menuArrow}>›</Text>
         </View>
         <View className={styles.menuItem} onClick={() => handleMenuClick('settings')}>

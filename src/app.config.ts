@@ -5,12 +5,11 @@ export default defineAppConfig({
   pages: [
     'pages/home/index',
     'pages/classics/index',
-    'pages/insights/index',
     'pages/mine/index',
     'pages/settings/index',
     'pages/privacy/index'
   ],
-  // 分包：章句详情、写心得、译文搜索等次级页面 + 完整章节数据（按需下载，减小主包体积）
+  // 分包：章句详情、写笔记、译文搜索等次级页面 + 完整章节数据（按需下载，减小主包体积）
   subPackages: [
     {
       root: 'packageContent',
@@ -61,12 +60,6 @@ export default defineAppConfig({
         text: '论语',
         iconPath: 'assets/tabbar/classics.png',
         selectedIconPath: 'assets/tabbar/classics-selected.png'
-      },
-      {
-        pagePath: 'pages/insights/index',
-        text: '心得',
-        iconPath: 'assets/tabbar/insights.png',
-        selectedIconPath: 'assets/tabbar/insights-selected.png'
       },
       {
         pagePath: 'pages/mine/index',
