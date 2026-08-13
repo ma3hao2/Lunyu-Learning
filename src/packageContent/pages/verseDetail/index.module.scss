@@ -320,3 +320,11 @@
   font-size: $font-size-xs;
   color: $color-text-tertiary;
 }
+
+/* 加载态骨架容器：结构类，无视觉样式。
+   用 View 包裹加载文案，使加载态与内容态的首节点类型不同（Text vs View），
+   避免 Taro 4.1.9 复用带 onClick 的 Text 节点触发 pure-text 别名缺失崩溃（见 docs/bug-taro-num-crash.md） */
+.loadingWrap,
+.loadFailedWrap {
+  width: 100%;
+}

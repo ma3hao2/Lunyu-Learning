@@ -60,6 +60,10 @@ const VerseDetailPage: React.FC = () => {
         let v = await loadVerse(verseId);
         if (!v && versesIndex.length > 0) {
           v = await loadVerse(versesIndex[0].id);
+          // 同步修正 verseId：否则 verseIdx=-1，「上一句/下一句」按钮全部禁用（B3）
+          if (v && !cancelled) {
+            setVerseId(v.id);
+          }
         }
         if (!cancelled) {
           setVerse(v);
@@ -236,9 +240,13 @@ const VerseDetailPage: React.FC = () => {
         enhanced
         bounces
       >
+        {/* 注意：loading 态 originalCard 的第一个子节点必须是 View，不能是 Text。
+            Taro 4.1.9 存在 bug：带 onClick 的 <Text> 节点被同位置的无 onClick <Text> 复用时，
+            移除事件监听会读取不存在的 pure-text 别名导致 TypeError（详见 git 记录）。
+            用 View 包裹后与内容态首节点（<Text>）类型不同，React 会重建而非复用节点。 */}
         <View className={styles.originalCard}>
           {loadFailed ? (
-            <>
+            <View className={styles.loadFailedWrap}>
               <Text className={styles.originalText}>加载失败，请检查网络</Text>
               <View
                 className={styles.actionBtnSecondary}
@@ -250,9 +258,11 @@ const VerseDetailPage: React.FC = () => {
               >
                 <Text>重试</Text>
               </View>
-            </>
+            </View>
           ) : (
-            <Text className={styles.originalText}>加载中...</Text>
+            <View className={styles.loadingWrap}>
+              <Text className={styles.originalText}>加载中...</Text>
+            </View>
           )}
         </View>
       </ScrollView>

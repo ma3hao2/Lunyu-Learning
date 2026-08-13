@@ -29,19 +29,31 @@ const ChapterDetailPage: React.FC = () => {
 
   const [chapterVerses, setChapterVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [retryTick, setRetryTick] = useState(0); // 重试计数，变化时重新触发加载
 
   useEffect(() => {
     let cancelled = false;
+    setLoadFailed(false);
     (async () => {
-      const verses = await loadChapter(chapterId);
-      const sorted = [...verses].sort((a, b) => a.order - b.order);
-      if (!cancelled) {
-        setChapterVerses(sorted);
-        setLoading(false);
+      try {
+        const verses = await loadChapter(chapterId);
+        const sorted = [...verses].sort((a, b) => a.order - b.order);
+        if (!cancelled) {
+          setChapterVerses(sorted);
+          setLoading(false);
+        }
+      } catch (e) {
+        console.error('[ChapterDetail] Load chapter failed:', e);
+        if (!cancelled) {
+          setLoading(false);
+          setLoadFailed(true);
+          Taro.showToast({ title: '加载失败，请重试', icon: 'none', duration: 2000 });
+        }
       }
     })();
     return () => { cancelled = true; };
-  }, [chapterId]);
+  }, [chapterId, retryTick]);
 
   const readCount = useMemo(() => {
     return chapterVerses.filter(v => readVerseIds.includes(v.id)).length;
@@ -73,6 +85,20 @@ const ChapterDetailPage: React.FC = () => {
       <View className={styles.verseList}>
         {loading ? (
           <Text className={styles.emptyTip}>加载中...</Text>
+        ) : loadFailed ? (
+          <View className={styles.loadFailedWrap}>
+            <Text className={styles.emptyTip}>加载失败，请检查网络</Text>
+            <View
+              className={styles.retryBtn}
+              style={{ marginTop: 24 }}
+              onClick={() => {
+                setLoading(true);
+                setRetryTick(t => t + 1);
+              }}
+            >
+              <Text>重试</Text>
+            </View>
+          </View>
         ) : chapterVerses.length > 0 ? (
           chapterVerses.map(verse => (
             <VerseCard

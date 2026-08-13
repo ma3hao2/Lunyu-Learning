@@ -69,3 +69,19 @@
   font-size: $font-size-sm;
   color: $color-text-tertiary;
 }
+
+/* 加载失败重试区 */
+.loadFailedWrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.retryBtn {
+  padding: 16rpx 48rpx;
+  border-radius: $radius-md;
+  background: $color-primary;
+  color: $color-text-white;
+  font-size: $font-size-md;
+}

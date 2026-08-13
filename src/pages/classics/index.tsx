@@ -201,11 +201,18 @@ const ClassicsPage: React.FC = () => {
               </View>
             );
           })}
-          {allResults.length > displayCount ? (
-            <Text className={styles.resultMore} onClick={handleShowAll}>点击显示全部（共 {allResults.length} 条，已显示 {displayCount} 条）</Text>
-          ) : allResults.length > PAGE_SIZE ? (
-            <Text className={styles.resultMore}>已全部加载，共 {allResults.length} 条</Text>
-          ) : null}
+          {/* 事件挂 View 而非 Text：避免 Taro 4.1.9 中 Text 节点复用导致 onClick 移除时
+              读取不存在的 pure-text 别名而抛错（点击"显示全部"后切换为"已全部加载"场景） */}
+          {allResults.length > PAGE_SIZE && (
+            <View
+              className={styles.resultMore}
+              onClick={allResults.length > displayCount ? handleShowAll : undefined}
+            >
+              {allResults.length > displayCount
+                ? `点击显示全部（共 ${allResults.length} 条，已显示 ${displayCount} 条）`
+                : `已全部加载，共 ${allResults.length} 条`}
+            </View>
+          )}
         </View>
       )}
 
