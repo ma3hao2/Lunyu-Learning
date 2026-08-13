@@ -87,6 +87,37 @@ export async function wxLogin(mockOpenId?: string): Promise<UserInfo> {
 }
 
 /**
+ * 确保用户已同意隐私政策（微信隐私保护框架，基础库 2.32.3+）
+ * - 无需授权：直接放行
+ * - 需要授权：弹出微信官方隐私授权框（requirePrivacyAuthorize），同意放行、拒绝拦截
+ * - 接口不可用（老基础库/非小程序）：保守放行，不阻塞原有功能
+ */
+export function ensurePrivacyAuthorized(): Promise<boolean> {
+  if (!isWeapp || !Taro.getPrivacySetting) {
+    return Promise.resolve(true);
+  }
+  return new Promise<boolean>((resolve) => {
+    Taro.getPrivacySetting({
+      success: (res) => {
+        if (!res.needAuthorization) {
+          resolve(true);
+          return;
+        }
+        if (!Taro.requirePrivacyAuthorize) {
+          resolve(true); // 老基础库无弹窗 API，放行
+          return;
+        }
+        Taro.requirePrivacyAuthorize({
+          success: () => resolve(true),
+          fail: () => resolve(false) // 用户拒绝授权
+        });
+      },
+      fail: () => resolve(true) // 查询失败：保守放行
+    });
+  });
+}
+
+/**
  * 静默登录 + 合并数据（App 启动/首次进入时自动调用，无感）
  * 已登录直接返回；未登录则登录，并三路合并：匿名进度 + 用户key本地进度 + 云端进度。
  * 任何失败均静默返回 null，不打扰用户（数据仍留在各自 key 下，不丢失）。
@@ -304,6 +335,9 @@ export async function publishNote(params: {
   tags: string[];
 }): Promise<string> {
   if (!isWeapp) throw new Error('仅小程序环境支持发布');
+  // 隐私合规：发布内容上传云端前，确保用户已同意隐私政策（未授权则弹官方授权框）
+  const authorized = await ensurePrivacyAuthorized();
+  if (!authorized) throw new Error('需同意隐私政策后才能发布');
   const user = getUserInfo();
   const result = await callPublishNote('publish', {
     ...params,

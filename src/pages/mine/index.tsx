@@ -7,7 +7,7 @@ import ProgressBar from '@/components/ProgressBar';
 import { getProgress, deleteNote, setNotePublic, setNotePrivate } from '@/utils/storage';
 import { versesIndex } from '@/data/versesIndex';
 import { chapters } from '@/data/chapters';
-import { getUserInfo, silentLoginAndMerge, logout, updateProfile, unpublishNote, publishNote } from '@/services/auth';
+import { getUserInfo, silentLoginAndMerge, logout, updateProfile, unpublishNote, publishNote, ensurePrivacyAuthorized } from '@/services/auth';
 import type { UserInfo, MyNote } from '@/types';
 
 const MinePage: React.FC = () => {
@@ -73,6 +73,12 @@ const MinePage: React.FC = () => {
     if (logging) return;
     setLogging(true);
     try {
+      // 隐私合规：登录（云同步数据上传）前先确保用户同意隐私政策，未授权则弹官方授权框
+      const authorized = await ensurePrivacyAuthorized();
+      if (!authorized) {
+        Taro.showToast({ title: '需同意隐私政策后才能登录', icon: 'none' });
+        return;
+      }
       const u = await silentLoginAndMerge();
       if (!u) throw new Error('登录失败，请重试');
       setUser(u);
@@ -365,10 +371,27 @@ const MinePage: React.FC = () => {
             <Text className={styles.profileTitle}>编辑资料</Text>
 
             {/* 头像选择：微信头像昵称填写能力 */}
+            {/* chooseAvatar 返回临时路径（wxfile://tmp_*），会被微信随时清理，须先上传云存储拿 fileID 再保存，否则重启/换设备后头像失效 */}
             <Button
               className={styles.avatarPicker}
               openType="chooseAvatar"
-              onChooseAvatar={(e) => setEditAvatarUrl(e.detail.avatarUrl)}
+              onChooseAvatar={async (e) => {
+                const tempPath = e.detail.avatarUrl;
+                if (!tempPath) return;
+                if (process.env.TARO_ENV !== 'weapp') {
+                  // 非小程序环境（H5 调试）无云存储，直接使用临时路径
+                  setEditAvatarUrl(tempPath);
+                  return;
+                }
+                try {
+                  const cloudPath = `avatars/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.png`;
+                  const res = await Taro.cloud.uploadFile({ cloudPath, filePath: tempPath });
+                  setEditAvatarUrl(res.fileID);
+                } catch (err) {
+                  console.error('[Mine] 头像上传失败:', err);
+                  Taro.showToast({ title: '头像上传失败，请重试', icon: 'none' });
+                }
+              }}
             >
               {editAvatarUrl ? (
                 <Image className={styles.avatarPickerImg} src={editAvatarUrl} mode="aspectFill" />

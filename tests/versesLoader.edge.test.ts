@@ -28,7 +28,7 @@ describe('loadVerse 数据缺失兜底 (PRF-003)', () => {
       loadVerse: (id: number) => Promise<unknown>;
     };
 
-    // 404 是真实存在的章句（全局编号 101-609），新实现直接命中全量数据
+    // 404 是真实存在的章句（全局编号 101-612，注意存在 3 个历史删条缺口 194/260/370，见 data.integrity.test.ts），新实现直接命中全量数据
     expect(await loadVerse(404)).not.toBeNull();
     // 数据外的 id 仍返回 null
     expect(await loadVerse(99901)).toBeNull();

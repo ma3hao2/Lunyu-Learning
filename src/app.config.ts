@@ -1,4 +1,7 @@
 export default defineAppConfig({
+  // 启用微信隐私保护框架（基础库 2.32.3+）：调用隐私接口（如 chooseAvatar）前需用户授权，
+  // 配合 app.tsx 的 getPrivacySetting / auth.ts 的 ensurePrivacyAuthorized 在登录、发布前弹官方授权框
+  __usePrivacyCheck__: true,
   pages: [
     'pages/home/index',
     'pages/classics/index',

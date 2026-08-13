@@ -2,8 +2,32 @@ import { useEffect } from 'react';
 import Taro from '@tarojs/taro';
 import { CLOUD_ENV } from '@/config/cloud';
 import { silentLoginAndMerge } from '@/services/auth';
+import { loadAllVerses } from '@/data/versesLoader';
 // 全局样式
 import './app.scss';
+
+// 隐私合规（P1-5）：需要隐私授权时暂不静默登录/上传，等用户首次触发（我的页登录、发布等）时
+// 通过 wx.requirePrivacyAuthorize 弹出微信官方授权框；无需授权或接口不可用时照旧静默登录
+function privacyGateLogin(): void {
+  if (process.env.TARO_ENV !== 'weapp' || !Taro.getPrivacySetting) {
+    silentLoginAndMerge();
+    return;
+  }
+  try {
+    Taro.getPrivacySetting({
+      success: (res) => {
+        if (!res.needAuthorization) silentLoginAndMerge();
+      },
+      fail: () => {
+        // 老基础库/接口异常：保守放行，维持原行为
+        silentLoginAndMerge();
+      }
+    });
+  } catch (e) {
+    console.warn('[App] 隐私授权检查失败（放行静默登录）:', e);
+    silentLoginAndMerge();
+  }
+}
 
 function App(props) {
   // 初始化云开发环境（仅微信小程序）
@@ -11,7 +35,9 @@ function App(props) {
     if (process.env.TARO_ENV === 'weapp' && Taro.cloud) {
       try {
         // 显式指定云环境 ID，未配置时回退到默认环境
-        const initConfig: { env?: string; traceUser: boolean } = { traceUser: true };
+        // 注意：traceUser（用户行为统计）保持关闭——云开发 init 参数以首次调用为准，无法事后开启；
+        // 隐私授权前不收集行为数据，关闭最稳妥（隐私政策页也无需声明行为统计）
+        const initConfig: { env?: string } = {};
         if (CLOUD_ENV) {
           initConfig.env = CLOUD_ENV;
         }
@@ -22,8 +48,13 @@ function App(props) {
       }
     }
     // 静默自动登录（openId 由平台注入，无需授权；失败静默，不影响使用）
-    // 首次登录会自动合并匿名期间的学习进度到用户 key 并上传云端
-    silentLoginAndMerge();
+    // 首次登录会自动合并匿名期间的学习进度到用户 key 并上传云端；需隐私授权时推迟到用户首次触发
+    privacyGateLogin();
+    // 空闲预热（P1-4）：首帧渲染后（300ms）再解压全量数据写入模块级缓存，
+    // 把「首次进章句/搜索页白屏」转化为「启动略慢」；预热成功后进页零解压成本
+    setTimeout(() => {
+      loadAllVerses().catch(() => { /* 预热失败静默，真正进页时仍会重试 */ });
+    }, 300);
   }, []);
 
   return props.children;

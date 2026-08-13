@@ -37,3 +37,14 @@
   line-height: $line-height-loose;
   margin-bottom: $spacing-sm;
 }
+
+.contractBtn {
+  display: inline-block;
+  margin-top: $spacing-xs;
+  padding: $spacing-sm $spacing-md;
+  background: $color-primary;
+  border-radius: $radius-md;
+  color: $color-text-white;
+  font-size: $font-size-sm;
+  text-align: center;
+}

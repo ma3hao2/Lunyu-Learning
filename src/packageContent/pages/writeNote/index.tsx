@@ -13,7 +13,11 @@ import { getSettings, type FontSize } from '@/utils/settings';
 
 const WriteNotePage: React.FC = () => {
   const router = useRouter();
-  const verseId = Number(router.params.verseId || '101');
+  // verseId 归一化：非法参数（如 abc）会得 NaN，导致笔记归属错乱，统一回退到第一篇（101）
+  const [verseId, setVerseId] = useState(() => {
+    const id = Number(router.params.verseId || '101');
+    return Number.isInteger(id) && id > 0 ? id : 101;
+  });
   const noteId = router.params.noteId ? Number(router.params.noteId) : null;
   const isEditing = noteId !== null;
 
@@ -47,6 +51,8 @@ const WriteNotePage: React.FC = () => {
         // 加载章句原文
         let v = await loadVerse(verseId);
         if (!v && versesIndex.length > 0) {
+          // 同步修正 verseId，避免提交时笔记归属错乱（显示第一篇但 verseId 存旧值）
+          setVerseId(versesIndex[0].id);
           v = await loadVerse(versesIndex[0].id);
         }
         if (!cancelled) {

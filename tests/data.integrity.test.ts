@@ -40,6 +40,18 @@ describe('数据完整性测试 (PRF-005 / PRF-006 / CLS-001 / CLS-002)', () => 
     expect(ids.size).toBe(509);
   });
 
+  // PRF-005: 章句 id 存在 3 个已知缺口（历史删条后未重排，索引与全量数据一致缺失）
+  // 显式锁定缺口集合，防止未来无意新增缺口踩到「随机生成 id / id 区间判断」类逻辑
+  test('PRF-005 [P1]: 章句 id 区间无新增缺口（已知缺口 194/260/370）', () => {
+    const KNOWN_GAPS = new Set([194, 260, 370]);
+    const ids = versesIndex.map(v => v.id);
+    const gaps: number[] = [];
+    for (let id = Math.min(...ids); id <= Math.max(...ids); id++) {
+      if (!ids.includes(id) && !KNOWN_GAPS.has(id)) gaps.push(id);
+    }
+    expect(gaps).toEqual([]);
+  });
+
   // PRF-005: 索引中各篇章条数 = chapters.verseCount
   test('PRF-005 [P0]: 各篇章索引条数 = chapters.verseCount', () => {
     for (const c of chapters) {
