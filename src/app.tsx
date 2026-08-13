@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import Taro from '@tarojs/taro';
 import { CLOUD_ENV } from '@/config/cloud';
 import { silentLoginAndMerge } from '@/services/auth';
-import { loadAllVerses } from '@/data/versesLoader';
 // 全局样式
 import './app.scss';
 
@@ -50,11 +49,9 @@ function App(props) {
     // 静默自动登录（openId 由平台注入，无需授权；失败静默，不影响使用）
     // 首次登录会自动合并匿名期间的学习进度到用户 key 并上传云端；需隐私授权时推迟到用户首次触发
     privacyGateLogin();
-    // 空闲预热（P1-4）：首帧渲染后（300ms）再解压全量数据写入模块级缓存，
-    // 把「首次进章句/搜索页白屏」转化为「启动略慢」；预热成功后进页零解压成本
-    setTimeout(() => {
-      loadAllVerses().catch(() => { /* 预热失败静默，真正进页时仍会重试 */ });
-    }, 300);
+    // 注意：不在主包做全量数据「空闲预热」——app.tsx 属主包，静态引用 versesLoader
+    // 会把 851KB 压缩 blob 打进主包（实测 common.js 174KB → 1MB，第四轮审查确认），
+    // 违背「完整数据进分包」的体积设计；首次进分包页面时解压（0.5-2s 低端机可接受）
   }, []);
 
   return props.children;
