@@ -64,7 +64,7 @@ export default defineAppConfig({
       },
       {
         pagePath: 'pages/insights/index',
-        text: '心得',
+        text: '笔记',
         iconPath: 'assets/tabbar/insights.png',
         selectedIconPath: 'assets/tabbar/insights-selected.png'
       },

@@ -16,7 +16,10 @@ const WriteNotePage: React.FC = () => {
     const id = Number(router.params.verseId || '101');
     return Number.isInteger(id) && id > 0 ? id : 101;
   });
-  const noteId = router.params.noteId ? Number(router.params.noteId) : null;
+  // noteId 归一化（云端审查 B5 修复）：非法参数（abc → NaN、0、负数、小数）一律回退为
+  // 新建态，避免 NaN 进入编辑态导致空编辑框 + 提交报「笔记不存在」
+  const rawNoteId = router.params.noteId ? Number(router.params.noteId) : NaN;
+  const noteId = Number.isInteger(rawNoteId) && rawNoteId > 0 ? rawNoteId : null;
   const isEditing = noteId !== null;
 
   const [content, setContent] = useState('');

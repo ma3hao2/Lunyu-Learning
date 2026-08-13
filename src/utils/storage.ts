@@ -231,33 +231,31 @@ export function markVerseRead(verseId: number): LearningProgress {
   // 始终记录最后阅读位置（「接着读」入口；复习已读章句也更新位置）
   progress.lastReadVerseId = verseId;
 
+  // 更新连续学习天数：新读与复习已读都算「今天学习了」。
+  // 云端审查 B1 修复：旧实现只在「新读」分支更新 lastReadDate，复习已读仅保存位置，
+  // 导致「周二只复习旧章 → 周三读新章」被误判中断、连续天数归 1。
+  if (!progress.lastReadDate) {
+    // 首次学习
+    progress.totalReadDays = 1;
+  } else if (progress.lastReadDate !== today) {
+    // 不是同一天，检查是否连续
+    if (isConsecutiveDay(progress.lastReadDate, today)) {
+      // 连续学习，天数 +1
+      progress.totalReadDays += 1;
+    } else {
+      // 中断了，重置为 1
+      progress.totalReadDays = 1;
+    }
+  }
+  // 如果是同一天，不改变 totalReadDays
+  progress.lastReadDate = today;
+
   // 如果该章句未读过，则添加
   if (!progress.readVerseIds.includes(verseId)) {
     progress.readVerseIds.push(verseId);
-    
-    // 更新连续学习天数
-    if (!progress.lastReadDate) {
-      // 首次学习
-      progress.totalReadDays = 1;
-    } else if (progress.lastReadDate !== today) {
-      // 不是同一天，检查是否连续
-      if (isConsecutiveDay(progress.lastReadDate, today)) {
-        // 连续学习，天数 +1
-        progress.totalReadDays += 1;
-      } else {
-        // 中断了，重置为 1
-        progress.totalReadDays = 1;
-      }
-    }
-    // 如果是同一天，不改变 totalReadDays
-    
-    progress.lastReadDate = today;
-    saveProgress(progress);
-  } else {
-    // 已读但位置变化：只需保存最后阅读位置
-    saveProgress(progress);
   }
-  
+
+  saveProgress(progress);
   return progress;
 }
 

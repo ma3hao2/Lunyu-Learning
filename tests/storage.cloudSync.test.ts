@@ -6,7 +6,8 @@
  * 每个用例都拿到启用云同步的全新模块实例。
  */
 process.env.TARO_ENV = 'weapp';
-const originalEnv = process.env.TARO_ENV;
+// 变量名唯一（不与其他测试文件共用同名顶层变量），避免 ts-jest 全 program 检查时 TS2451 重复声明
+const originalCloudSyncEnv = process.env.TARO_ENV;
 
 let storage: any;
 let auth: { getUserInfo: jest.Mock; uploadProgress: jest.Mock };
@@ -28,7 +29,7 @@ afterEach(() => {
 
 afterAll(() => {
   // 恢复环境变量，避免影响同一 worker 中后续测试文件（auth.ts 等按 TARO_ENV 分支）
-  process.env.TARO_ENV = originalEnv;
+  process.env.TARO_ENV = originalCloudSyncEnv;
 });
 
 const emptyProgress = {

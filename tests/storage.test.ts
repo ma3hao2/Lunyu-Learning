@@ -432,6 +432,62 @@ describe('学习天数连续逻辑（totalReadDays）', () => {
       jest.useRealTimers();
     }
   });
+
+  // 云端审查 B1 回归锁定：复习已读章句同样视为「今天学习了」。
+  // 旧实现只在新读分支更新 lastReadDate，复习仅保存位置 → 「周二只复习旧章、
+  // 周三读新章」被误判中断，连续天数错误归 1（dsh 审查报告 B1）。
+  test('B1 回归锁定 [P0]: 复习已读章句 → lastReadDate 更新为今天、连续天数 +1', () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-08-09T12:00:00'));
+    try {
+      getStore()[STORAGE_KEY] = {
+        readVerseIds: [100],
+        myNotes: [],
+        totalReadDays: 3,
+        lastReadDate: '2026-08-08'
+      };
+      // 复习已读章句 100（readVerseIds 已含，不会重复添加）
+      const p = markVerseRead(100);
+      expect(p.lastReadDate).toBe('2026-08-09');   // 复习也算当天学习
+      expect(p.totalReadDays).toBe(4);             // 连续天数延续
+      expect(p.readVerseIds).toEqual([100]);       // 不重复添加
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test('B1 回归锁定 [P1]: 中断后仅复习已读章句 → 天数重置为 1 且日期更新', () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-08-09T12:00:00'));
+    try {
+      getStore()[STORAGE_KEY] = {
+        readVerseIds: [100],
+        myNotes: [],
+        totalReadDays: 10,
+        lastReadDate: '2026-08-06'
+      };
+      const p = markVerseRead(100);
+      expect(p.totalReadDays).toBe(1);             // 中断重置
+      expect(p.lastReadDate).toBe('2026-08-09');   // 日期仍推进到今天
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test('B1 回归锁定 [P1]: 同日复习已读章句 → 天数与日期不变', () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-08-09T12:00:00'));
+    try {
+      getStore()[STORAGE_KEY] = {
+        readVerseIds: [100],
+        myNotes: [],
+        totalReadDays: 5,
+        lastReadDate: '2026-08-09'
+      };
+      const p = markVerseRead(100);
+      expect(p.totalReadDays).toBe(5);
+      expect(p.lastReadDate).toBe('2026-08-09');
+    } finally {
+      jest.useRealTimers();
+    }
+  });
 });
 
 describe('保存失败时的异常处理', () => {

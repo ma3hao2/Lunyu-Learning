@@ -7,7 +7,8 @@
  * 覆盖：双向同步合并 / 下载失败仍上传 / 上传失败提示 / 并发保护（syncInFlight 复用）
  */
 process.env.TARO_ENV = 'weapp';
-const originalEnv = process.env.TARO_ENV;
+// 变量名唯一（不与其他测试文件共用同名顶层变量），避免 ts-jest 全 program 检查时 TS2451 重复声明
+const originalSyncEnv = process.env.TARO_ENV;
 
 let sync: any;
 let auth: { downloadProgress: jest.Mock; uploadProgress: jest.Mock; getUserInfo: jest.Mock };
@@ -26,7 +27,7 @@ beforeEach(() => {
 });
 
 afterAll(() => {
-  process.env.TARO_ENV = originalEnv;
+  process.env.TARO_ENV = originalSyncEnv;
 });
 
 describe('手动双向同步（syncProgressNow）', () => {

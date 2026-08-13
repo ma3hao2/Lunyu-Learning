@@ -12,7 +12,8 @@
  * 4. getPrivacySetting 查询失败 → 保守放行（不阻塞老基础库/异常）
  */
 process.env.TARO_ENV = 'weapp';
-const originalEnv = process.env.TARO_ENV;
+// 变量名唯一（不与其他测试文件共用同名顶层变量），避免 ts-jest 全 program 检查时 TS2451 重复声明
+const originalPrivacyEnv = process.env.TARO_ENV;
 
 // 注意：Taro 必须在 beforeEach（resetModules 之后）require，
 // 否则静态导入拿到的是 reset 前的旧实例，与 auth 内 require 到的新实例不是同一个
@@ -27,7 +28,7 @@ beforeEach(() => {
 });
 
 afterAll(() => {
-  process.env.TARO_ENV = originalEnv;
+  process.env.TARO_ENV = originalPrivacyEnv;
 });
 
 describe('隐私授权 ensurePrivacyAuthorized（P1-5）', () => {

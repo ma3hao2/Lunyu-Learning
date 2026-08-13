@@ -48,8 +48,8 @@ export interface MyNote {
   createTime: string;
   updateTime?: string;   // 最后修改时间 (YYYY-MM-DD HH:mm，分钟级)，跨设备合并时按此判断最新版本
   tags?: string[];  // 笔记标签
-  isPublic?: boolean;    // 是否公开到社区
-  cloudNoteId?: string;  // 云端文档 _id（发布成功后保存，用于编辑/取消发布联动）
+  isPublic?: boolean;    // 存量兼容：历史「公开到社区」标记（去 UGC 后不再写入）
+  cloudNoteId?: string;  // 存量兼容：历史云端笔记 _id（去 UGC 后不再写入）
 }
 
 // 用户信息
