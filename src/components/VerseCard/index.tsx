@@ -18,7 +18,7 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isRead = false, hasNote = 
       onClick={() => onClick?.(verse.id)}
     >
       <View className={styles.header}>
-        <Text className={styles.order}>第{verse.order}章</Text>
+        <Text className={styles.order}>{verse.chapterId}-{verse.order}</Text>
         <View className={styles.badges}>
           {hasNote && <Text className={styles.noteBadge}>笔记</Text>}
           {isRead && <Text className={styles.badge}>已读</Text>}

@@ -181,7 +181,7 @@ const ClassicsPage: React.FC = () => {
                 onClick={() => handleVerseClick(result.id)}
               >
                 <View className={styles.resultHeader}>
-                  <Text className={styles.resultChapter}>{chapter?.title} · 第{result.order}章</Text>
+                  <Text className={styles.resultChapter}>{chapter?.title} · {result.chapterId}-{result.order}</Text>
                   <View className={styles.matchBadges}>
                     {result.matchFields.map(f => (
                       <Text key={f} className={styles.matchBadge}>{getFieldLabel(f)}</Text>

@@ -280,7 +280,7 @@ const VerseDetailPage: React.FC = () => {
       <View className={styles.originalCard}>
         {chapter && (
           <Text className={styles.chapterTag} onClick={goChapter}>
-            {chapter.title} · 第{verse.order}章 ›
+            {chapter.title} · {verse.chapterId}-{verse.order} ›
           </Text>
         )}
         <Text className={styles.originalText} selectable>{verse.original}</Text>

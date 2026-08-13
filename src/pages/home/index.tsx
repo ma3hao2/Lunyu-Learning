@@ -138,7 +138,7 @@ const HomePage: React.FC = () => {
           </View>
           <Text className={styles.dailyOriginal} numberOfLines={2}>{lastReadVerse.original}</Text>
           <View className={styles.dailyBtn}>
-            <Text className={styles.dailyBtnText}>{lastReadVerse.chapterTitle} · 第{lastReadVerse.order}章 ›</Text>
+            <Text className={styles.dailyBtnText}>{lastReadVerse.chapterTitle} · {lastReadVerse.chapterId}-{lastReadVerse.order} ›</Text>
           </View>
         </View>
       )}
