@@ -1,8 +1,8 @@
 {
   "miniprogramRoot": "dist/",
   "cloudfunctionRoot": "cloudfunctions/",
-  "projectname": "taro_template",
-  "description": "taro_template",
+  "projectname": "lunyu-miniapp",
+  "description": "论语学习小程序",
   "appid": "touristappid",
   "setting": {
     "urlCheck": true,

@@ -229,7 +229,7 @@ const SettingsPage: React.FC = () => {
           </View>
           <View className={styles.menuInfo}>
             <Text className={styles.menuText}>清空学习数据</Text>
-            <Text className={styles.menuDesc}>已读、点赞与本地笔记</Text>
+            <Text className={styles.menuDesc}>已读记录与本地笔记</Text>
           </View>
           <Text className={styles.menuArrow}>›</Text>
         </View>
@@ -272,7 +272,7 @@ const SettingsPage: React.FC = () => {
           <View className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <Text className={styles.modalTitle}>确认清空</Text>
             <Text className={styles.modalContent}>
-              将清空已读记录、点赞与本地笔记，且无法恢复。确定继续吗？
+              将清空已读记录与本地笔记，且无法恢复。确定继续吗？
             </Text>
             <View className={styles.modalActions}>
               <View className={styles.modalBtnCancel} onClick={cancelClear}>

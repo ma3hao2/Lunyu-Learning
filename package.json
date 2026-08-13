@@ -1,8 +1,8 @@
 {
-  "name": "taro_template",
+  "name": "lunyu-miniapp",
   "version": "1.0.0",
   "private": true,
-  "description": "taro_template",
+  "description": "论语学习小程序（Taro 4 + React + TypeScript + 微信云开发）",
   "templateInfo": {
     "name": "react",
     "typescript": true,
