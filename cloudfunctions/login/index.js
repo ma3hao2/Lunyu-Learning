@@ -22,7 +22,8 @@ exports.main = async (event, context) => {
           updateTime: db.serverDate()
         }
       });
-      return { code: 0, message: '更新成功', data: { openId, nickName, avatarUrl } };
+      // 返回字段与默认登录分支一致（补齐 UserInfo 要求的 gender/loginTime，避免前端缓存资料字段缺失）
+      return { code: 0, message: '更新成功', data: { openId, nickName, avatarUrl, gender: 0, loginTime: new Date().toISOString() } };
     }
 
     // 默认：登录/注册

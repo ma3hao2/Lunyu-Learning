@@ -63,10 +63,10 @@ export function logout(): void {
  * 流程：云函数 login -> 通过 wxContext.OPENID 自动获取 openId + 创建/获取用户记录
  * （云开发环境下 OPENID 由平台自动注入，无需前端用 code 换取）
  */
-export async function wxLogin(): Promise<UserInfo> {
+export async function wxLogin(mockOpenId?: string): Promise<UserInfo> {
   if (!isWeapp) {
-    // H5 环境模拟登录（开发调试用）
-    return mockLogin();
+    // H5 环境模拟登录（开发调试用；mockOpenId 供测试模拟不同用户，默认固定 id 模拟持久登录）
+    return mockLogin(mockOpenId);
   }
 
   // 调用云函数换取 openId 并创建/获取用户记录
@@ -254,12 +254,11 @@ export async function clearCloudProgress(): Promise<SyncResult> {
 // H5 模拟登录（开发调试）
 // ============================================
 
-let mockLoginCounter = 0;
-
-function mockLogin(): UserInfo {
-  mockLoginCounter += 1;
+function mockLogin(openId?: string): UserInfo {
+  // 默认固定 openId：H5 调试时模拟"已登录"的持久状态（每次新 openId 会导致进度/点赞数据无法跨刷新保留）；
+  // 测试可通过 wxLogin(mockOpenId) 传入指定 openId 模拟不同用户
   const user: UserInfo = {
-    openId: `mock_openid_${Date.now()}_${mockLoginCounter}`,
+    openId: openId || 'mock_openid_dev',
     nickName: '论语学习者',
     avatarUrl: '',
     loginTime: new Date().toISOString()

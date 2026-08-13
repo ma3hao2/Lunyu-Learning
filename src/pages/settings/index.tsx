@@ -68,6 +68,7 @@ const SettingsPage: React.FC = () => {
       myNotes: [],
       totalReadDays: 1,
       lastReadDate: undefined,
+      lastReadVerseId: undefined,
       deletedNoteIds: [],
       likedNoteIds: [],
       unlikedNoteIds: []
@@ -79,11 +80,11 @@ const SettingsPage: React.FC = () => {
       try {
         const res = await clearCloudProgress();
         if (!res.success) {
-          message = '本地已清空\n云端清理失败';
+          message = '本地已清空，云端清理失败';
           icon = 'none';
         }
       } catch (e) {
-        message = '本地已清空\n云端清理失败';
+        message = '本地已清空，云端清理失败';
         icon = 'none';
       }
     }

@@ -17,6 +17,10 @@ exports.main = async (event, context) => {
       if (!progress) {
         return { code: -1, message: '缺少进度数据' };
       }
+      // 大小校验：云数据库单文档上限 1MB，超限时直接拒绝，避免同步失败且不污染云端
+      if (JSON.stringify(progress).length > 900 * 1024) {
+        return { code: -1, message: '数据过大，同步失败（超过 900KB），请先清理笔记' };
+      }
 
       const existing = await col.where({ _openid: openId }).get();
 
@@ -67,6 +71,7 @@ exports.main = async (event, context) => {
               myNotes: [],
               totalReadDays: 1,
               lastReadDate: null,
+              lastReadVerseId: null,
               deletedNoteIds: [],
               likedNoteIds: [],
               unlikedNoteIds: []
@@ -143,11 +148,16 @@ function mergeProgress(cloudProgress, localProgress) {
         : localProgress.lastReadDate)
     : (cloudProgress.lastReadDate || localProgress.lastReadDate);
 
-  // 最后阅读位置：跟随「最后学习日期」较新的一侧（与 lastReadDate 同源）
+  // 最后阅读位置：优先取「存在 lastReadVerseId」的一侧（老云端数据可能缺该字段）；
+  // 两侧都有/都没有时跟随「最后学习日期」较新的一侧，日期相等时偏取本地（本地更可能是刚读的位置）
   const newerSide = (cloudProgress.lastReadDate && localProgress.lastReadDate)
-    ? (cloudProgress.lastReadDate > localProgress.lastReadDate ? cloudProgress : localProgress)
-    : (cloudProgress.lastReadDate ? cloudProgress : localProgress);
-  const lastReadVerseId = newerSide.lastReadVerseId;
+    ? (cloudProgress.lastReadDate >= localProgress.lastReadDate ? localProgress : cloudProgress)
+    : (localProgress.lastReadDate ? localProgress : cloudProgress);
+  const lastReadVerseId = (localProgress.lastReadVerseId && !cloudProgress.lastReadVerseId)
+    ? localProgress.lastReadVerseId
+    : (!localProgress.lastReadVerseId && cloudProgress.lastReadVerseId)
+      ? cloudProgress.lastReadVerseId
+      : newerSide.lastReadVerseId;
 
   // 裁剪无界增长的标记数组：超过阈值时只保留最新的条目，避免文档体积膨胀
   const TRIM_THRESHOLD = 200;

@@ -67,6 +67,18 @@ function getTodayString(): string {
   return `${y}-${m}-${day}`;
 }
 
+// 获取当前时间字符串 (YYYY-MM-DD HH:mm，本地时区)。
+// 笔记 createTime/updateTime 用分钟级：跨设备同一天编辑同一笔记时可按时间戳判先后（天级无法区分）
+function getNowString(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const h = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${y}-${m}-${day} ${h}:${min}`;
+}
+
 // 检查是否是连续的一天（昨天或今天）
 function isConsecutiveDay(lastDate: string | undefined, today: string): boolean {
   if (!lastDate) return false;
@@ -124,11 +136,16 @@ export function mergeProgress(local: LearningProgress, cloud: LearningProgress):
     ? (local.lastReadDate > cloud.lastReadDate ? local.lastReadDate : cloud.lastReadDate)
     : (local.lastReadDate || cloud.lastReadDate);
 
-  // 最后阅读位置：跟随「最后学习日期」较新的一侧（与 lastReadDate 同源）
+  // 最后阅读位置：优先取「存在 lastReadVerseId」的一侧（老云端数据可能缺该字段）；
+  // 两侧都有/都没有时跟随「最后学习日期」较新的一侧，日期相等时偏取本地（本地更可能是刚读的位置）
   const newerSide = (local.lastReadDate && cloud.lastReadDate)
-    ? (local.lastReadDate > cloud.lastReadDate ? local : cloud)
+    ? (local.lastReadDate >= cloud.lastReadDate ? local : cloud)
     : (local.lastReadDate ? local : cloud);
-  const lastReadVerseId = newerSide.lastReadVerseId;
+  const lastReadVerseId = (local.lastReadVerseId && !cloud.lastReadVerseId)
+    ? local.lastReadVerseId
+    : (!local.lastReadVerseId && cloud.lastReadVerseId)
+      ? cloud.lastReadVerseId
+      : newerSide.lastReadVerseId;
 
   // 裁剪无界增长的标记数组：超过阈值时只保留最新的条目，避免逼近 storage 10MB 上限
   const TRIM_THRESHOLD = 200;
@@ -256,8 +273,8 @@ export function addNote(verseId: number, content: string, tags?: string[]): Lear
     id: Date.now() * 1000 + Math.floor(Math.random() * 1000),
     verseId,
     content,
-    createTime: getTodayString(),
-    updateTime: getTodayString(),
+    createTime: getNowString(),
+    updateTime: getNowString(),
     tags: tags && tags.length > 0 ? tags : undefined
   };
   progress.myNotes.unshift(note);

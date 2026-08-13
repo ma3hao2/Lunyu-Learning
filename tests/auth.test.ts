@@ -53,14 +53,14 @@ describe('云端同步（未登录拦截）', () => {
 
 describe('用户数据隔离', () => {
   test('不同用户的进度数据相互隔离', async () => {
-    // 用户 A 登录并标记已读
-    const userA = await wxLogin();
+    // 用户 A 登录并标记已读（H5 mock 环境显式指定 openId 模拟不同用户）
+    const userA = await wxLogin('mock_openid_a');
     markVerseRead(101);
     expect(getProgress().readVerseIds).toContain(101);
 
     // 退出，模拟用户 B 登录
     logout();
-    const userB = await wxLogin();
+    const userB = await wxLogin('mock_openid_b');
     expect(userB.openId).not.toBe(userA.openId);
 
     // 用户 B 的进度应为空（隔离）

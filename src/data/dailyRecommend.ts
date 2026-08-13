@@ -12,9 +12,10 @@ export const dailyRecommends: DailyRecommend[] = [
   { verseId: 240, reason: '以学为乐，达到学习的最高境界。' }
 ];
 
-// 计算一年中的第几天（1-366，按本地时区）
+// 计算一年中的第几天（0-365，按本地时区；1月1日为第0天）。
+// 修复 off-by-one：原实现 new Date(y, 0, 0) 使第0天落在去年12-31，导致 dailyRecommends[0] 全年不被推荐
 function getDayOfYear(date: Date): number {
-  const start = new Date(date.getFullYear(), 0, 0);
+  const start = new Date(date.getFullYear(), 0, 1);
   const diff = date.getTime() - start.getTime();
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 }

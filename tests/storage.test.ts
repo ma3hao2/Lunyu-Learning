@@ -112,7 +112,7 @@ describe('笔记功能 (DAT-005 / DAT-006 / WTN-008)', () => {
     expect(p.myNotes[0].verseId).toBe(101);
     expect(p.myNotes[0].content).toBe('测试心得内容1');
     expect(p.myNotes[0].id).toBeGreaterThan(0);
-    expect(p.myNotes[0].createTime).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(p.myNotes[0].createTime).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
     // 持久化
     expect(getStore()[STORAGE_KEY].myNotes).toHaveLength(1);
   });
