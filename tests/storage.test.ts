@@ -271,6 +271,19 @@ describe('笔记编辑与删除 (WTN-009 / WTN-010)', () => {
     expect(() => updateNote(999999, '不存在')).toThrow('笔记不存在');
   });
 
+  // P0-1 回归锁定：updateNote 曾误用天级 getTodayString()，同日编辑后 updateTime 反而小于
+  // createTime（"2026-08-13" < "2026-08-13 09:30"），跨设备合并时编辑版本输给旧副本
+  test('WTN-009 [P0]: updateNote 后 updateTime 为分钟级格式且 ≥ createTime（P0-1 回归锁定）', () => {
+    const p = addNote(101, '原始心得内容');
+    const noteId = p.myNotes[0].id;
+    const createTime = p.myNotes[0].createTime;
+    updateNote(noteId, '更新后的心得内容');
+    const note = getNoteById(noteId)!;
+    expect(note.updateTime).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/); // 分钟级
+    // 字符串比较可判先后：编辑版本不早于创建版本（天级实现会在此失败）
+    expect(note.updateTime! >= createTime).toBe(true);
+  });
+
   test('WTN-010 [P0]: deleteNote 删除笔记并持久化', () => {
     const p = addNote(102, '待删除心得');
     const noteId = p.myNotes[0].id;

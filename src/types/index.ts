@@ -22,7 +22,7 @@ export interface Verse {
 // 每日推荐（方案 E：按主题轮换，theme 由篇章唯一映射）
 export interface DailyRecommend {
   verseId: number;
-  reason: string;        // 推荐理由（章句 keyPoint）
+  reason: string;        // 推荐理由（篇内位置文案；keyPoint 在分包完整数据里，主包首页暂不展示）
   theme: string;         // 今日主题（如「学习修身」）
   chapterTitle: string;  // 篇章标题（如「学而第一」）
   chapterId: number;     // 篇章 id（「换一批」按同篇换句需要）
@@ -46,7 +46,7 @@ export interface MyNote {
   verseId: number;
   content: string;
   createTime: string;
-  updateTime?: string;   // 最后修改时间 (YYYY-MM-DD)，跨设备合并时按此判断最新版本
+  updateTime?: string;   // 最后修改时间 (YYYY-MM-DD HH:mm，分钟级)，跨设备合并时按此判断最新版本
   tags?: string[];  // 笔记标签
   isPublic?: boolean;    // 是否公开到社区
   cloudNoteId?: string;  // 云端文档 _id（发布成功后保存，用于编辑/取消发布联动）

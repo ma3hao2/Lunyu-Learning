@@ -138,6 +138,15 @@ describe('上下文预览 (extractContext)', () => {
     expect(preview.length).toBeLessThanOrEqual(6); // 5 chars + …
   });
 
+  // P2-2 回归锁定：关键词长度超过 maxLen 时 half 曾为负，截断区间滑到关键词之后
+  test('预览: 关键词长度超过 maxLen 时截断区间仍包含关键词（P2-2 回归锁定）', () => {
+    const kw = '子'.repeat(60); // > maxLen(50)
+    const text = `原文 ${kw} 后文`;
+    const preview = extractContext(text, kw, 50);
+    expect(preview).toContain(kw.slice(0, 10)); // 窗口内保留关键词头部
+    expect(preview.length).toBeLessThanOrEqual(52); // 50 + 前后省略号
+  });
+
   test('空文本返回空字符串', () => {
     expect(extractContext('', 'test', 10)).toBe('');
   });

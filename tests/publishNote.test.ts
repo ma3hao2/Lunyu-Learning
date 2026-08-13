@@ -2,9 +2,25 @@
  * publishNote 云函数纯逻辑单测（COM-023）
  * 覆盖：发布校验（内容长度/标签数量/标签长度/verseId 有效性）
  *       list 分页 / _openid 剔除 / 点赞状态 / 点赞与取消点赞查重（logic.js）
+ *       index.js 入口：publish 分支 verseId 必填拦截 + authorName 截断（P2-1）
  */
 import { validateNote } from '../cloudfunctions/publishNote/validate';
 import { listNotes, likeNote, unlikeNote } from '../cloudfunctions/publishNote/logic';
+
+// P2-1：index.js 入口测试用的 wx-server-sdk mock（db 经 global 侧信道按用例注入，避免模块加载时序问题）
+let __publishFakeDb: any = null;
+let __msgSecResult: any = { result: { suggest: 'pass' } };
+jest.mock('wx-server-sdk', () => ({
+  DYNAMIC_CURRENT_ENV: 'test-env',
+  init: jest.fn(),
+  getWXContext: () => ({ OPENID: 'me' }),
+  database: () => __publishFakeDb,
+  openapi: {
+    security: {
+      msgSecCheck: jest.fn(() => Promise.resolve(__msgSecResult))
+    }
+  }
+}), { virtual: true });
 
 /**
  * 构造可配置的 mock 云数据库。
@@ -300,5 +316,95 @@ describe('publishNote 容错（notes_likes 集合缺失，COM 补充）', () => 
     expect(res.code).toBe(0);
     expect(res.data.list).toHaveLength(2);
     expect(res.data.list.every((n: any) => n.likedByMe === false)).toBe(true);
+  });
+});
+
+describe('publishNote 云函数入口（index.js main，P2-1）', () => {
+  let main: any;
+  let fakeDb: { db: any; calls: any };
+
+  beforeEach(() => {
+    fakeDb = makeFakeDb({ collections: { notes: { list: [] } } });
+    __publishFakeDb = fakeDb.db;
+    __msgSecResult = { result: { suggest: 'pass' } };
+    jest.resetModules();
+    main = require('../cloudfunctions/publishNote/index').main;
+  });
+
+  test('publish: verseId 缺失时拒绝（P2-1 前置拦截，validateNote 层放行 undefined）', async () => {
+    const res = await main({ action: 'publish', content: '学习心得', tags: [] }, {});
+    expect(res.code).toBe(-1);
+    expect(res.message).toBe('章句ID无效');
+    expect(fakeDb.calls.add).toHaveLength(0);
+  });
+
+  test('publish: verseId 非整数/非正数拒绝', async () => {
+    for (const bad of [0, -1, 1.5, NaN]) {
+      const res = await main({ action: 'publish', content: '心得', tags: [], verseId: bad }, {});
+      expect(res.message).toBe('章句ID无效');
+    }
+    expect(fakeDb.calls.add).toHaveLength(0);
+  });
+
+  test('publish: authorName 超 20 字截断（P2-1）', async () => {
+    const res = await main({
+      action: 'publish', content: '心得', tags: [], verseId: 101,
+      authorName: '名'.repeat(30)
+    }, {});
+    expect(res.code).toBe(0);
+    expect(fakeDb.calls.add[0].data.authorName).toBe('名'.repeat(20));
+  });
+
+  test('publish: authorName 非字符串/空白回退默认「论语学习者」（P2-1）', async () => {
+    for (const bad of [123, null, '   ', undefined]) {
+      fakeDb = makeFakeDb({ collections: { notes: { list: [] } } });
+      __publishFakeDb = fakeDb.db;
+      jest.resetModules();
+      main = require('../cloudfunctions/publishNote/index').main;
+      const res = await main({
+        action: 'publish', content: '心得', tags: [], verseId: 101, authorName: bad
+      }, {});
+      expect(res.code).toBe(0);
+      expect(fakeDb.calls.add[0].data.authorName).toBe('论语学习者');
+    }
+  });
+
+  test('publish: 合法发布成功，写入 verseId 与规范化字段', async () => {
+    const res = await main({
+      action: 'publish', content: '学习心得', tags: ['修身', '学习'], verseId: 101,
+      verseOriginal: '学而时习之', chapterTitle: '学而第一', authorName: ' 用户名 '
+    }, {});
+    expect(res.code).toBe(0);
+    expect(res.data.id).toBeTruthy();
+    const doc = fakeDb.calls.add[0].data;
+    expect(doc.verseId).toBe(101);
+    expect(doc._openid).toBe('me');
+    expect(doc.authorName).toBe('用户名'); // trim 后入库
+    expect(doc.content).toBe('学习心得');
+    expect(doc.likeCount).toBe(0);
+  });
+
+  test('publish: 内容安全检查命中 risky 时拒绝发布', async () => {
+    __msgSecResult = { result: { suggest: 'risky' } };
+    jest.resetModules();
+    main = require('../cloudfunctions/publishNote/index').main;
+    const res = await main({
+      action: 'publish', content: '违规内容', tags: [], verseId: 101
+    }, {});
+    expect(res.code).toBe(-1);
+    expect(res.message).toContain('不合适');
+    expect(fakeDb.calls.add).toHaveLength(0);
+  });
+
+  test('unpublish: 非作者操作被拒绝（_openid 校验）', async () => {
+    fakeDb = makeFakeDb({
+      collections: { notes: { doc: { n1: { _openid: 'someone_else' } } } }
+    });
+    __publishFakeDb = fakeDb.db;
+    jest.resetModules();
+    main = require('../cloudfunctions/publishNote/index').main;
+    const res = await main({ action: 'unpublish', noteId: 'n1' }, {});
+    expect(res.code).toBe(-1);
+    expect(res.message).toBe('无权操作');
   });
 });

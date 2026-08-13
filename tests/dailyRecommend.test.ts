@@ -107,8 +107,8 @@ describe('异常路由参数 (EXC-001 / EXC-002)', () => {
 
   // EXC-002: 无效篇章 id 回退
   test('EXC-002 [P1]: 无效篇章 id loadChapter 返回空数组', async () => {
-    const v = await loadVerse(99999);
-    expect(v).toBeNull();
+    const v = await loadChapter(25);
+    expect(v).toEqual([]);
   });
 
   // EXC-002: 篇章 id 越界
@@ -176,24 +176,25 @@ describe('注释换行渲染 (VSD-004)', () => {
     expect(lines[3]).toBe('【解读】评析');
   });
 
-  // VSD-003: 注释展示完整
-  test('VSD-003 [P0]: 全部 509 章 commentary 含 【解读】', async () => {
+  // VSD-003: 注释展示完整（真实统计断言：允许少数章节无【解读】标记，≥95%）
+  test('VSD-003 [P0]: 全部 509 章 commentary 含 【解读】标记（≥95%）', async () => {
+    let total = 0;
+    let withMark = 0;
+    const missing: number[] = [];
     for (let id = 1; id <= 20; id++) {
       const verses = await loadChapter(id);
       for (const v of verses) {
-        // 允许少数章节无【解读】标记，但应大于 95%
-        if (!v.commentary.includes('【解读】')) {
-          // 仅在出现时打印，不强制失败
+        total++;
+        if (v.commentary.includes('【解读】')) {
+          withMark++;
+        } else {
+          missing.push(v.id);
         }
       }
     }
-    // 抽样检查前 20 章
-    const sampled: number[] = [];
-    for (let id = 1; id <= 20; id++) {
-      const verses = await loadChapter(id);
-      verses.slice(0, 1).forEach(v => sampled.push(v.id));
-    }
-    expect(sampled.length).toBe(20);
+    expect(total).toBe(509);
+    if (missing.length > 0) console.warn('无【解读】标记的章句：', missing);
+    expect(withMark / total).toBeGreaterThanOrEqual(0.95);
   });
 });
 

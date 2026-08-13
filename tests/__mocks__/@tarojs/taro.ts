@@ -26,6 +26,10 @@ const Taro = {
   redirectTo: jest.fn(),
   // 登录
   login: jest.fn(),
+  // 隐私授权（P1-5：微信隐私保护框架，基础库 2.32.3+）
+  getPrivacySetting: jest.fn(),
+  requirePrivacyAuthorize: jest.fn(),
+  openPrivacyContract: jest.fn(),
   // 云开发
   cloud: {
     init: jest.fn(),
@@ -63,6 +67,9 @@ export const navigateTo = Taro.navigateTo;
 export const navigateBack = Taro.navigateBack;
 export const switchTab = Taro.switchTab;
 export const redirectTo = Taro.redirectTo;
+export const getPrivacySetting = Taro.getPrivacySetting;
+export const requirePrivacyAuthorize = Taro.requirePrivacyAuthorize;
+export const openPrivacyContract = Taro.openPrivacyContract;
 export const eventCenter = Taro.eventCenter;
 export const useDidShow = Taro.useDidShow;
 export const useDidHide = Taro.useDidHide;

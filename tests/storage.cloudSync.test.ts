@@ -105,4 +105,17 @@ describe('云端同步（weapp 环境）', () => {
 
     expect(auth.uploadProgress).not.toHaveBeenCalled();
   });
+
+  // P2-5 回归锁定：settings 清空数据场景依赖 clearPendingSync 取消待执行的防抖上传，
+  // 否则「清空云端」意图与 3 秒后自动上传空进度冲突
+  test('clearPendingSync 后 3 秒防抖定时器不再触发上传（P2-5 回归锁定）', async () => {
+    auth.getUserInfo.mockReturnValue({ openId: 'openid_1' });
+    auth.uploadProgress.mockResolvedValue({ success: true });
+
+    storage.saveProgress({ ...emptyProgress, readVerseIds: [101] });
+    storage.clearPendingSync();
+    await jest.advanceTimersByTimeAsync(4000);
+
+    expect(auth.uploadProgress).not.toHaveBeenCalled();
+  });
 });
