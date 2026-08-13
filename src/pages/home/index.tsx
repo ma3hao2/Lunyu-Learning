@@ -30,6 +30,8 @@ const HomePage: React.FC = () => {
     refreshProgress();
     // 每次进入首页轮换经典名句
     setClassicVerses(pickRandomVerses());
+    // 每日推荐按天轮换：useState 只在挂载时算一次，进页时重算，避免挂后台过夜第二天仍是昨天的推荐
+    setDailyRecommend(getTodayRecommend());
   });
 
   // 今日推荐：只用轻量索引（original 字段），避免加载完整章节数据进主包
@@ -85,10 +87,10 @@ const HomePage: React.FC = () => {
     Taro.navigateTo({ url: `/packageContent/pages/verseDetail/index?id=${dailyVerse.id}` });
   };
 
-  // 换一批：从推荐池随机换一条（不重复当前）
+  // 换一批：保持今日主题不变，同篇章内换一句（不重复当前句）
   const handleShuffle = useCallback(() => {
-    setDailyRecommend(getAlternativeRecommend(dailyRecommend.verseId));
-  }, [dailyRecommend.verseId]);
+    setDailyRecommend(getAlternativeRecommend(dailyRecommend.chapterId, dailyRecommend.verseId));
+  }, [dailyRecommend.chapterId, dailyRecommend.verseId]);
 
   const handleClassicClick = (verseId: number) => {
     Taro.navigateTo({ url: `/packageContent/pages/verseDetail/index?id=${verseId}` });
@@ -126,6 +128,8 @@ const HomePage: React.FC = () => {
         <View className={styles.dailyLabel}>
           <Text className={styles.dailyLabelIcon}>日</Text>
           <Text className={styles.dailyLabelText}>今日推荐</Text>
+          {/* 主题标签（方案 E：按主题轮换，20 篇 20 天一轮） */}
+          <Text className={styles.dailyTag}>{dailyRecommend.theme}</Text>
         </View>
         {dailyVerse ? (
           <Text className={styles.dailyOriginal}>{dailyVerse.original}</Text>
@@ -136,7 +140,7 @@ const HomePage: React.FC = () => {
             <Skeleton height="44rpx" width="70%" style={{ marginTop: '16rpx' }} />
           </View>
         )}
-        <Text className={styles.dailyReason}>{dailyRecommend.reason}</Text>
+        <Text className={styles.dailyChapter}>{dailyRecommend.chapterTitle}</Text>
         <View className={styles.dailyActions}>
           <View className={styles.dailyBtn} onClick={(e) => { e.stopPropagation(); handleShuffle(); }}>
             <Text className={styles.dailyBtnText}>换一批</Text>

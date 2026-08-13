@@ -19,10 +19,13 @@ export interface Verse {
   keyPoint: string;    // 核心要点
 }
 
-// 每日推荐
+// 每日推荐（方案 E：按主题轮换，theme 由篇章唯一映射）
 export interface DailyRecommend {
   verseId: number;
-  reason: string; // 推荐理由
+  reason: string;        // 推荐理由（章句 keyPoint）
+  theme: string;         // 今日主题（如「学习修身」）
+  chapterTitle: string;  // 篇章标题（如「学而第一」）
+  chapterId: number;     // 篇章 id（「换一批」按同篇换句需要）
 }
 
 // 学习进度

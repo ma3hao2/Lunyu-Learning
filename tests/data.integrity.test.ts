@@ -102,13 +102,13 @@ describe('数据完整性测试 (PRF-005 / PRF-006 / CLS-001 / CLS-002)', () => 
     }
   });
 
-  // CLS-003: 主题唯一性
-  test('CLS-003 [P0]: 主题字段非空且唯一', () => {
+  // CLS-003: 主题唯一性（方案 E 每日推荐依赖「1 主题 = 1 篇章」做 20 天轮换，硬断言锁定）
+  test('CLS-003 [P0]: 主题字段非空且 20 篇全唯一', () => {
     const themes = chapters.map(c => c.theme);
-    const uniqueThemes = new Set(themes);
-    // 主题允许在不同篇章出现相同值，但每个主题都应非空
+    // 每个主题都应非空
     expect(themes.every(t => t.length > 0)).toBe(true);
-    expect(uniqueThemes.size).toBeGreaterThanOrEqual(10); // 至少 10 个不同主题
+    // 20 篇 = 20 个不同主题（方案 E 数据前提：1 主题 = 1 篇章）
+    expect(new Set(themes).size).toBe(20);
   });
 
   // CMP-006 / CMP-007 边界

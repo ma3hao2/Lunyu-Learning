@@ -2,54 +2,80 @@
  * 今日推荐 & 异常路由测试
  * 对应测试用例: HOME-002 / HOME-003 / VSD-013 / EXC-001 / EXC-002 / HOME-004 / HOME-007
  */
-import { dailyRecommends, getTodayRecommend } from '@/data/dailyRecommend';
+import { getTodayRecommend, getAlternativeRecommend } from '@/data/dailyRecommend';
 import { loadVerse, versesIndex } from '@/data/versesLoader';
 import { chapters } from '@/data/chapters';
 
 describe('今日推荐 (HOME-002 / HOME-003 / HOME-004)', () => {
-  // HOME-002: 今日推荐展示
-  test('HOME-002 [P0]: getTodayRecommend 返回非空对象，含 verseId 和 reason', () => {
+  // HOME-002: 今日推荐展示（方案 E：主题轮换，返回主题/篇章/章句核心要点）
+  test('HOME-002 [P0]: getTodayRecommend 返回完整对象（verseId/theme/chapterTitle/chapterId/reason）', () => {
     const r = getTodayRecommend();
     expect(r).toBeTruthy();
     expect(r.verseId).toBeGreaterThan(0);
     expect(r.reason).toBeTruthy();
     expect(r.reason.length).toBeGreaterThan(5);
+    expect(r.theme).toBeTruthy();
+    expect(r.chapterTitle).toBeTruthy();
+    expect(r.chapterId).toBeGreaterThan(0);
   });
 
-  // HOME-002: 推荐对应的章句存在
+  // HOME-002: 推荐对应的章句存在且属于今日主题篇章
   test('HOME-002 [P0]: 今日推荐的 verseId 在 versesIndex 中存在', async () => {
     const r = getTodayRecommend();
     const verse = await loadVerse(r.verseId);
     expect(verse).not.toBeNull();
     expect(verse!.original).toBeTruthy();
+    expect(verse!.chapterId).toBe(r.chapterId);
+    // reason 为主包可得的轻量文案（keyPoint 在分包完整数据里，首页暂不展示）
+    const chapter = chapters.find(c => c.id === r.chapterId)!;
+    expect(r.reason).toBe(`第 ${verse!.order} 句 · 本篇共 ${chapter.verseCount} 句`);
   });
 
-  // HOME-003: 推荐按日期轮换（按 dayOfYear % length；1月1日为第0天）
-  test('HOME-003 [P1]: 推荐按一年中第几天 dayOfYear % 8 轮换', () => {
-    // 复刻 getTodayRecommend 的 dayOfYear 计算（与 src/data/dailyRecommend.ts 保持一致）
-    const today = new Date();
-    const start = new Date(today.getFullYear(), 0, 1);
-    const dayOfYear = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    const dayIndex = dayOfYear % dailyRecommends.length;
+  // HOME-003: 主题按篇章顺序轮换（20 篇 20 天一轮，注入固定日期）
+  test('HOME-003 [P1]: 连续 20 天主题按篇章 id 顺序轮换（dayOfYear 0~19 → chapterId 1~20）', () => {
+    for (let day = 0; day < 20; day++) {
+      const d = new Date(2026, 0, 1 + day); // 1月1日(第0天) ~ 1月20日(第19天)
+      const r = getTodayRecommend(d);
+      expect(r.chapterId).toBe(day + 1);
+      expect(r.theme).toBe(chapters[day].theme);
+      expect(r.chapterTitle).toBe(chapters[day].title);
+    }
+    // 第 21 天回到第一篇（20 天一轮）
+    const d21 = new Date(2026, 0, 21);
+    expect(getTodayRecommend(d21).chapterId).toBe(1);
+  });
+
+  // HOME-003: 确定性——同一天两次调用结果一致（可分享、可运营）
+  test('HOME-003 [P1]: 同一天两次调用返回相同句子（确定性哈希）', () => {
+    const d = new Date(2026, 5, 15);
+    expect(getTodayRecommend(d).verseId).toBe(getTodayRecommend(d).verseId);
+    expect(getTodayRecommend(d).reason).toBe(getTodayRecommend(d).reason);
+  });
+
+  // HOME-003: 跨年——同月同日主题相同（篇章轮换不变）但句子不同（种子含年份）
+  test('HOME-003 [P1]: 跨年同月同日主题相同但句子不同', () => {
+    const r2026 = getTodayRecommend(new Date(2026, 0, 1));
+    const r2027 = getTodayRecommend(new Date(2027, 0, 1));
+    expect(r2026.theme).toBe(r2027.theme);
+    expect(r2026.chapterId).toBe(r2027.chapterId);
+    expect(r2026.verseId).not.toBe(r2027.verseId);
+  });
+
+  // HOME-004: 换一批——保持今日主题不变，同篇章内换句
+  test('HOME-004 [P0]: 换一批保持同主题且不含当前句', () => {
     const r = getTodayRecommend();
-    expect(r.verseId).toBe(dailyRecommends[dayIndex].verseId);
-    expect(r.reason).toBe(dailyRecommends[dayIndex].reason);
-  });
-
-  // HOME-003: 推荐池共 8 条
-  test('HOME-003 [P1]: dailyRecommends 共 8 条，verseId 唯一', () => {
-    expect(dailyRecommends).toHaveLength(8);
-    const ids = new Set(dailyRecommends.map(r => r.verseId));
-    expect(ids.size).toBe(8);
-  });
-
-  // HOME-004: 推荐跳转目标存在
-  test('HOME-004 [P0]: 每日推荐对应的章句都能被 loadVerse 加载', async () => {
-    for (const r of dailyRecommends) {
-      const v = await loadVerse(r.verseId);
-      expect(v).not.toBeNull();
-      expect(v!.translation).toBeTruthy();
-      expect(v!.commentary).toBeTruthy();
+    const chapterVerses = versesIndex.filter(v => v.chapterId === r.chapterId);
+    // 方案 E 数据前提：每篇至少 3 句（尧曰最少），排除当前句后仍有可选项
+    expect(chapterVerses.length).toBeGreaterThan(1);
+    const pool = chapterVerses.filter(v => v.id !== r.verseId);
+    expect(pool.length).toBeGreaterThanOrEqual(2);
+    for (let i = 0; i < 10; i++) {
+      const alt = getAlternativeRecommend(r.chapterId, r.verseId);
+      expect(alt.chapterId).toBe(r.chapterId);
+      expect(alt.theme).toBe(r.theme);
+      expect(alt.verseId).not.toBe(r.verseId);
+      expect(alt.verseId).toBeGreaterThan(0);
+      expect(alt.reason).toBeTruthy();
     }
   });
 });

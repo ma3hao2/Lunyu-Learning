@@ -97,6 +97,29 @@
   font-weight: $font-weight-medium;
 }
 
+// 主题标签（方案 E）：半透明白底圆角，靠右展示今日主题
+.dailyTag {
+  margin-left: auto;
+  padding: 4rpx $spacing-sm;
+  font-size: $font-size-xs;
+  color: $color-primary;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: $radius-round;
+  font-weight: $font-weight-medium;
+  position: relative;
+  z-index: 1;
+}
+
+// 篇章标题（方案 E）：主题内确定性选句，展示所属篇章
+.dailyChapter {
+  display: block;
+  font-size: $font-size-xs;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: $spacing-xs;
+  position: relative;
+  z-index: 1;
+}
+
 .dailyOriginal {
   display: block;
   font-size: $font-size-lg;
@@ -104,16 +127,6 @@
   line-height: $line-height-loose;
   font-weight: $font-weight-medium;
   margin-bottom: $spacing-sm;
-  position: relative;
-  z-index: 1;
-}
-
-.dailyReason {
-  display: block;
-  font-size: $font-size-sm;
-  color: rgba(255, 255, 255, 0.7);
-  line-height: $line-height-normal;
-  margin-bottom: $spacing-md;
   position: relative;
   z-index: 1;
 }
