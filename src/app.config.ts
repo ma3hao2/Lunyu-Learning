@@ -5,6 +5,7 @@ export default defineAppConfig({
   pages: [
     'pages/home/index',
     'pages/classics/index',
+    'pages/insights/index',
     'pages/mine/index',
     'pages/settings/index',
     'pages/privacy/index'
@@ -60,6 +61,12 @@ export default defineAppConfig({
         text: '论语',
         iconPath: 'assets/tabbar/classics.png',
         selectedIconPath: 'assets/tabbar/classics-selected.png'
+      },
+      {
+        pagePath: 'pages/insights/index',
+        text: '心得',
+        iconPath: 'assets/tabbar/insights.png',
+        selectedIconPath: 'assets/tabbar/insights-selected.png'
       },
       {
         pagePath: 'pages/mine/index',

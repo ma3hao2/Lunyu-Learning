@@ -1,0 +1,110 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding: $spacing-lg $page-padding $spacing-xl;
+}
+
+.header {
+  margin-bottom: $spacing-lg;
+}
+
+.title {
+  display: block;
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.subtitle {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-top: $spacing-xs;
+}
+
+.noteCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.99);
+  }
+}
+
+.noteContent {
+  display: block;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  line-height: $line-height-normal;
+  margin-bottom: $spacing-sm;
+}
+
+.noteTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-sm;
+}
+
+.noteTag {
+  font-size: $font-size-xs;
+  color: $color-tag-text;
+  background: $color-tag-bg;
+  padding: 4rpx $spacing-sm;
+  border-radius: $radius-round;
+}
+
+.noteFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.noteTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.noteSource {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  flex: 1;
+  text-align: right;
+  margin-left: $spacing-sm;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.noteActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-lg;
+  border-top: 2rpx solid $color-divider;
+  padding-top: $spacing-sm;
+}
+
+.noteAction {
+  font-size: $font-size-sm;
+  color: $color-primary;
+}
+
+.noteActionDelete {
+  font-size: $font-size-sm;
+  color: $color-error;
+}
+
+.emptyNotes {
+  padding: $spacing-xl 0;
+  text-align: center;
+  color: $color-text-tertiary;
+  font-size: $font-size-sm;
+}

@@ -195,7 +195,7 @@ const HomePage: React.FC = () => {
             <Text className={styles.quickDesc}>二十篇全文</Text>
           </View>
         </View>
-        <View className={styles.quickItem} onClick={() => handleNavigate('/pages/mine/index')}>
+        <View className={styles.quickItem} onClick={() => handleNavigate('/pages/insights/index')}>
           <View className={styles.quickIcon}>
             <Text className={styles.quickIconText}>记</Text>
           </View>

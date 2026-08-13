@@ -6,7 +6,7 @@ import styles from './index.module.scss';
 import { saveProgress, clearPendingSync } from '@/utils/storage';
 import { getSettings, saveSettings, type AppSettings, type FontSize } from '@/utils/settings';
 import { syncProgressNow } from '@/services/sync';
-import { isLoggedIn, getUserInfo, clearCloudProgress } from '@/services/auth';
+import { isLoggedIn, getUserInfo, clearCloudProgress, ensurePrivacyAuthorized } from '@/services/auth';
 import type { UserInfo } from '@/types';
 
 const FONT_OPTIONS: { value: FontSize; label: string }[] = [
@@ -117,7 +117,13 @@ const SettingsPage: React.FC = () => {
   };
 
   // 复制数据来源链接到剪贴板（小程序无法直接打开公众号外链）
-  const handleDataSource = () => {
+  // setClipboardData 属微信隐私接口：先确保用户已同意隐私协议（未声明/未授权会 errno 112 失败）
+  const handleDataSource = async () => {
+    const authorized = await ensurePrivacyAuthorized();
+    if (!authorized) {
+      Taro.showToast({ title: '需同意隐私政策后才能复制', icon: 'none' });
+      return;
+    }
     Taro.setClipboardData({
       data: DATA_SOURCE_URL,
       success: () => {

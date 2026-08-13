@@ -4,17 +4,16 @@ import Taro, { useDidShow } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import ProgressBar from '@/components/ProgressBar';
-import { getProgress, deleteNote } from '@/utils/storage';
+import { getProgress } from '@/utils/storage';
 import { versesIndex } from '@/data/versesIndex';
 import { chapters } from '@/data/chapters';
 import { getUserInfo, silentLoginAndMerge, logout, updateProfile, ensurePrivacyAuthorized } from '@/services/auth';
-import type { UserInfo, MyNote } from '@/types';
+import type { UserInfo } from '@/types';
 
 const MinePage: React.FC = () => {
   const [progress, setProgress] = useState(getProgress());
   const [user, setUser] = useState<UserInfo | null>(getUserInfo());
   const [logging, setLogging] = useState(false);
-  const [showAllNotes, setShowAllNotes] = useState(false);
   const [avatarFailed, setAvatarFailed] = useState(false);
   // 资料编辑弹层
   const [showProfileEditor, setShowProfileEditor] = useState(false);
@@ -108,35 +107,6 @@ const MinePage: React.FC = () => {
     });
   }, []);
 
-  const handleNoteClick = (verseId: number) => {
-    Taro.navigateTo({ url: `/packageContent/pages/verseDetail/index?id=${verseId}` });
-  };
-
-  // 编辑笔记
-  const handleEditNote = useCallback((note: MyNote) => {
-    Taro.navigateTo({ url: `/packageContent/pages/writeNote/index?verseId=${note.verseId}&noteId=${note.id}` });
-  }, []);
-
-  // 删除笔记
-  const handleDeleteNote = useCallback((note: MyNote) => {
-    Taro.showModal({
-      title: '删除笔记',
-      content: '确定要删除这条笔记吗？删除后不可恢复。',
-      confirmColor: '#B8612D',
-      success: (res) => {
-        if (res.confirm) {
-          try {
-            deleteNote(note.id);
-            Taro.showToast({ title: '已删除', icon: 'success' });
-            setProgress(getProgress());
-          } catch (e: any) {
-            Taro.showToast({ title: e?.message || '删除失败', icon: 'none' });
-          }
-        }
-      }
-    });
-  }, []);
-
   const handleMenuClick = (type: string) => {
     if (type === 'continue') {
       // 真正续读：有上次阅读位置直接进章句详情，否则去论语列表
@@ -148,10 +118,9 @@ const MinePage: React.FC = () => {
       }
     } else if (type === 'classics') {
       Taro.switchTab({ url: '/pages/classics/index' });
-    } else if (type === 'notes') {
-      // 我的笔记：本页已有笔记列表，展开全部并定位到笔记区
-      setShowAllNotes(true);
-      Taro.pageScrollTo({ selector: '#notesSection', duration: 300 });
+    } else if (type === 'insights') {
+      // 我的笔记：内容已移至「心得」tab
+      Taro.switchTab({ url: '/pages/insights/index' });
     } else if (type === 'settings') {
       Taro.navigateTo({ url: '/pages/settings/index' });
     }
@@ -232,54 +201,6 @@ const MinePage: React.FC = () => {
         <ProgressBar current={readCount} total={totalVerses} label="论语二十篇" />
       </View>
 
-      {/* 我的笔记 */}
-      <View id="notesSection" className={styles.notesSection}>
-        <View className={styles.sectionHeader}>
-          <Text className={styles.sectionTitle}>我的笔记</Text>
-          <Text className={styles.sectionCount}>共{progress.myNotes.length}条</Text>
-        </View>
-        {progress.myNotes.length > 0 ? (
-          <>
-            {(showAllNotes ? progress.myNotes : progress.myNotes.slice(0, 5)).map(note => {
-              const verse = versesIndex.find(v => v.id === note.verseId);
-              return (
-                <View
-                  key={note.id}
-                  className={styles.noteCard}
-                  onClick={() => handleNoteClick(note.verseId)}
-                >
-                  <Text className={styles.noteContent}>{note.content}</Text>
-                  {note.tags && note.tags.length > 0 && (
-                    <View className={styles.noteTags}>
-                      {note.tags.map((tag, idx) => (
-                        <Text key={`${tag}-${idx}`} className={styles.noteTag}>{tag}</Text>
-                      ))}
-                    </View>
-                  )}
-                  <View className={styles.noteFooter}>
-                    <Text className={styles.noteTime}>{note.createTime}</Text>
-                    {verse && <Text className={styles.noteSource}>出自：{verse.original.substring(0, 12)}...</Text>}
-                  </View>
-                  <View className={styles.noteActions}>
-                    <Text className={styles.noteAction} onClick={(e) => { e.stopPropagation(); handleEditNote(note); }}>编辑</Text>
-                    <Text className={styles.noteActionDelete} onClick={(e) => { e.stopPropagation(); handleDeleteNote(note); }}>删除</Text>
-                  </View>
-                </View>
-              );
-            })}
-            {progress.myNotes.length > 5 && (
-              <Text className={styles.noteMore} onClick={() => setShowAllNotes(v => !v)}>
-                {showAllNotes ? '收起笔记' : `查看全部 ${progress.myNotes.length} 条笔记`}
-              </Text>
-            )}
-          </>
-        ) : (
-          <View className={styles.emptyNotes}>
-            <Text>还没有笔记，去学习后写第一条笔记吧</Text>
-          </View>
-        )}
-      </View>
-
       {/* 功能菜单 */}
       <View className={styles.menuSection}>
         <View className={styles.menuItem} onClick={() => handleMenuClick('continue')}>
@@ -289,7 +210,7 @@ const MinePage: React.FC = () => {
           <Text className={styles.menuText}>继续阅读</Text>
           <Text className={styles.menuArrow}>›</Text>
         </View>
-        <View className={styles.menuItem} onClick={() => handleMenuClick('notes')}>
+        <View className={styles.menuItem} onClick={() => handleMenuClick('insights')}>
           <View className={styles.menuIcon}>
             <Text className={styles.menuIconText}>记</Text>
           </View>
