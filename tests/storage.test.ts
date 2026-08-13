@@ -170,6 +170,25 @@ describe('进度合并（登录后本地与云端合并）', () => {
     expect(merged.readVerseIds.sort((a, b) => a - b)).toEqual([101, 102, 103]);
   });
 
+  test('mergeProgress: 已读章句超 200 条不裁剪（B1 回归锁定：已读进度不丢失）', () => {
+    // Hermes 审查报告 V2 的 B1 疑点：怀疑 readVerseIds 被 TRIM_THRESHOLD=200 裁剪导致数据丢失。
+    // 实际实现只裁剪点赞/删除标记数组，readVerseIds 恒取并集——此用例锁定该行为，防止回归。
+    const manyReads = Array.from({ length: 250 }, (_, i) => 101 + i); // 101..350
+    const local = { readVerseIds: manyReads, myNotes: [], totalReadDays: 30 };
+    const cloud = { readVerseIds: [509, 510], myNotes: [], totalReadDays: 31 };
+    const merged = mergeProgress(local as any, cloud as any);
+    expect(merged.readVerseIds).toHaveLength(252); // 250 + 2 并集，未被裁到 200
+    expect(merged.readVerseIds).toEqual(expect.arrayContaining([101, 350, 509, 510]));
+  });
+
+  test('mergeProgress: 点赞/删除标记数组超 200 条时裁剪（裁剪仅限标记，不涉及已读）', () => {
+    const manyLikes = Array.from({ length: 250 }, (_, i) => `note_${i}`);
+    const local = { readVerseIds: [], myNotes: [], likedNoteIds: manyLikes, unlikedNoteIds: [], deletedNoteIds: [] };
+    const cloud = { readVerseIds: [], myNotes: [], likedNoteIds: [], unlikedNoteIds: [], deletedNoteIds: [] };
+    const merged = mergeProgress(local as any, cloud as any);
+    expect(merged.likedNoteIds).toHaveLength(200); // 裁剪生效（当前设计仅限标记数组）
+  });
+
   test('mergeProgress: 笔记按 id 合并去重', () => {
     const local = { readVerseIds: [], myNotes: [{ id: 1, verseId: 101, content: '本地', createTime: '2026-07-29' }], totalReadDays: 1 };
     const cloud = { readVerseIds: [], myNotes: [{ id: 2, verseId: 102, content: '云端', createTime: '2026-07-28' }], totalReadDays: 1 };
