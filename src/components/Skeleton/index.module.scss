@@ -1,0 +1,18 @@
+@use '@/styles/variables.scss' as *;
+
+// 骨架屏占位块：浅灰底 + 流光动画
+.skeleton {
+  border-radius: $radius-sm;
+  background: linear-gradient(90deg, #ede8e0 25%, #f7f3ec 37%, #ede8e0 63%);
+  background-size: 400% 100%;
+  animation: skeletonShimmer 1.4s ease infinite;
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}

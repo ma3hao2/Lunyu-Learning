@@ -188,6 +188,27 @@ const WriteNotePage: React.FC = () => {
         : (isEditing ? '更新成功' : '保存成功'),
       icon: cloudError ? 'none' : 'success'
     });
+
+    // 4. 引导（P2-4）：新公开发布成功后询问是否去社区查看
+    if (isPublic && !cloudError && !isEditing) {
+      setTimeout(() => {
+        Taro.showModal({
+          title: '发布成功',
+          content: '已发布到社区，去看看？',
+          confirmText: '去看看',
+          cancelText: '返回',
+          success: (res) => {
+            if (res.confirm) {
+              Taro.switchTab({ url: '/pages/insights/index' });
+            } else if (Taro.getCurrentPages().length > 1) {
+              Taro.navigateBack();
+            }
+          }
+        });
+      }, 400);
+      return;
+    }
+
     setTimeout(() => {
       // 用户可能已手动返回，栈深不足时不重复导航
       if (Taro.getCurrentPages().length > 1) {

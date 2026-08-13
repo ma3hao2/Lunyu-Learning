@@ -72,3 +72,138 @@
   font-size: $font-size-sm;
   color: $color-text-tertiary;
 }
+
+// 发布 FAB（P2-2）：右下角悬浮按钮
+.fab {
+  position: fixed;
+  right: 32rpx;
+  bottom: 64rpx;
+  width: 104rpx;
+  height: 104rpx;
+  border-radius: 50%;
+  background: $color-primary;
+  box-shadow: 0 8rpx 24rpx rgba(184, 97, 45, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.fabText {
+  font-size: 48rpx;
+  color: #ffffff;
+  line-height: 1;
+}
+
+// 章句选择弹层
+.pickerMask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+}
+
+.pickerSheet {
+  width: 100%;
+  max-height: 75vh;
+  background: $color-bg-card;
+  border-radius: $radius-xl $radius-xl 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pickerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-md $spacing-lg;
+  border-bottom: 1rpx solid $color-border;
+}
+
+.pickerTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.pickerBack {
+  font-size: $font-size-xs;
+  color: $color-primary;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.pickerList {
+  flex: 1;
+  max-height: 60vh;
+}
+
+.pickerChapter {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md $spacing-lg;
+  border-bottom: 1rpx solid $color-border;
+
+  &:active {
+    background: $color-bg-page;
+  }
+}
+
+.pickerChapterInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.pickerChapterTitle {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.pickerChapterDesc {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.pickerChapterArrow {
+  font-size: $font-size-lg;
+  color: $color-text-tertiary;
+  margin-left: $spacing-sm;
+}
+
+.pickerVerse {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md $spacing-lg;
+  border-bottom: 1rpx solid $color-border;
+
+  &:active {
+    background: $color-bg-page;
+  }
+}
+
+.pickerVerseNo {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.pickerVerseText {
+  flex: 1;
+  min-width: 0;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}

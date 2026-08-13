@@ -3,6 +3,7 @@ import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import styles from './index.module.scss';
 import ProgressBar from '@/components/ProgressBar';
+import Skeleton from '@/components/Skeleton';
 import { versesIndex, type VerseIndex } from '@/data/versesIndex';
 import { chapters } from '@/data/chapters';
 import { getTodayRecommend, getAlternativeRecommend } from '@/data/dailyRecommend';
@@ -99,12 +100,23 @@ const HomePage: React.FC = () => {
     Taro.switchTab({ url: '/pages/classics/index' });
   };
 
+  // 搜索框入口：跳转分包搜索页（译文/注释全库搜索，含搜索历史）
+  const handleOpenSearch = () => {
+    Taro.navigateTo({ url: '/packageContent/pages/search/index' });
+  };
+
   return (
     <ScrollView className={styles.container} scrollY enhanced bounces>
       {/* 顶部标题 */}
       <View className={styles.header}>
         <Text className={styles.appTitle}>论语学习</Text>
         <Text className={styles.appSubtitle}>学而时习之，不亦说乎</Text>
+      </View>
+
+      {/* 搜索入口（P2-1：最常驻页面提供搜索） */}
+      <View className={styles.searchBar} onClick={handleOpenSearch}>
+        <Text className={styles.searchIcon}>搜</Text>
+        <Text className={styles.searchPlaceholder}>搜索译文、注释...（支持全库搜索）</Text>
       </View>
 
       {/* 今日推荐 */}
@@ -116,7 +128,11 @@ const HomePage: React.FC = () => {
         {dailyVerse ? (
           <Text className={styles.dailyOriginal}>{dailyVerse.original}</Text>
         ) : (
-          <Text className={styles.dailyOriginal}>加载中...</Text>
+          /* 骨架屏（P2-5）：数据未就绪时的加载占位 */
+          <View className={styles.dailySkeleton}>
+            <Skeleton height="44rpx" />
+            <Skeleton height="44rpx" width="70%" style={{ marginTop: '16rpx' }} />
+          </View>
         )}
         <Text className={styles.dailyReason}>{dailyRecommend.reason}</Text>
         <View className={styles.dailyActions}>
@@ -156,7 +172,7 @@ const HomePage: React.FC = () => {
             <Text className={styles.statLabel}>已读篇目</Text>
           </View>
           <View className={styles.statItem}>
-            <Text className={styles.statNumber}>{readCount === 0 ? 0 : totalReadDays}</Text>
+            <Text className={styles.statNumber}>{readCount === 0 ? 0 : totalReadDays} 🔥</Text>
             <Text className={styles.statLabel}>连续学习</Text>
           </View>
           <View className={styles.statItem}>

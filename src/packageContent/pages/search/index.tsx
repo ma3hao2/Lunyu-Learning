@@ -8,6 +8,7 @@ import { loadAllVerses } from '@/data/versesLoader';
 import { useDebounce } from '@/hooks/useDebounce';
 import { searchDeep, getFieldLabel, type SearchResult } from '@/packageContent/services/deepSearch';
 import { renderHighlighted } from '@/utils/highlight';
+import { getSearchHistory, addSearchHistory, clearSearchHistory } from '@/utils/searchHistory';
 
 const PAGE_SIZE = 20; // 每页显示条数
 
@@ -26,6 +27,8 @@ const SearchPage: React.FC = () => {
   const searchSeqRef = useRef(0);
   // 重试计数：变化时重新触发预加载
   const [retryTick, setRetryTick] = useState(0);
+  // 搜索历史（P2-1：最近 10 条，点击重搜、可清空）
+  const [history, setHistory] = useState<string[]>(() => getSearchHistory());
 
   const debouncedSearchText = useDebounce(searchText, 300);
 
@@ -61,6 +64,8 @@ const SearchPage: React.FC = () => {
       setDisplayCount(PAGE_SIZE);
       return;
     }
+    // 有效搜索词写入历史（去重置顶，防抖后每词只写一次）
+    setHistory(addSearchHistory(kw));
     let cancelled = false;
     const seq = ++searchSeqRef.current;
     (async () => {
@@ -109,6 +114,23 @@ const SearchPage: React.FC = () => {
           <Text className={styles.clearBtn} onClick={handleClear}>✕</Text>
         )}
       </View>
+
+      {/* 搜索历史（无搜索词时展示，点击重搜/清空） */}
+      {!loading && !loadFailed && !isSearching && history.length > 0 && (
+        <View className={styles.historySection}>
+          <View className={styles.historyHeader}>
+            <Text className={styles.historyTitle}>搜索历史</Text>
+            <Text className={styles.historyClear} onClick={() => { clearSearchHistory(); setHistory([]); }}>清空</Text>
+          </View>
+          <View className={styles.historyChips}>
+            {history.map(kw => (
+              <View key={kw} className={styles.historyChip} onClick={() => setSearchText(kw)}>
+                <Text>{kw}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
 
       {/* 状态提示 */}
       {loadFailed ? (

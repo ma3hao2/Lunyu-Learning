@@ -7,6 +7,8 @@ import { fetchPublishedNotes, likePublishedNote, unlikePublishedNote } from '@/s
 import { togglePublishedNoteLike } from '@/utils/storage';
 import { useDebounce } from '@/hooks/useDebounce';
 import { isLoggedIn } from '@/services/auth';
+import { chapters } from '@/data/chapters';
+import { versesIndex } from '@/data/versesIndex';
 import type { PublishedNote } from '@/types';
 
 const PAGE_SIZE = 20;
@@ -17,6 +19,9 @@ const InsightsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  // 发布 FAB 弹层（P2-2）：pickerChapterId 为空显示篇章列表，选中后显示该篇章句列表
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerChapterId, setPickerChapterId] = useState<number | null>(null);
 
   // 分享：邀请好友一起学习论语心得
   useShareAppMessage(() => ({
@@ -134,6 +139,26 @@ const InsightsPage: React.FC = () => {
 
   const isSearching = debouncedSearchText.trim().length > 0;
 
+  // 发布 FAB：打开章句选择弹层（从篇章列表开始）
+  const handleFabClick = useCallback(() => {
+    setPickerChapterId(null);
+    setPickerOpen(true);
+  }, []);
+
+  // 弹层内选中章句 → 跳写心得页
+  const handlePickVerse = useCallback((verseId: number) => {
+    setPickerOpen(false);
+    Taro.navigateTo({ url: `/packageContent/pages/writeNote/index?verseId=${verseId}` });
+  }, []);
+
+  const pickerChapter = pickerChapterId !== null
+    ? chapters.find(c => c.id === pickerChapterId)
+    : null;
+  // 选中篇的章句（轻量索引即可：写心得页会自行加载完整原文）
+  const pickerVerses = pickerChapterId !== null
+    ? versesIndex.filter(v => v.chapterId === pickerChapterId)
+    : [];
+
   return (
     <ScrollView
       className={styles.container}
@@ -186,6 +211,50 @@ const InsightsPage: React.FC = () => {
         <Text className={styles.emptyTip}>
           {isSearching ? '未找到匹配心得' : '还没有公开心得，去写第一条吧'}
         </Text>
+      )}
+
+      {/* 发布 FAB（P2-2：悬浮按钮，弹出章句选择） */}
+      <View className={styles.fab} onClick={handleFabClick}>
+        <Text className={styles.fabText}>✎</Text>
+      </View>
+
+      {/* 章句选择弹层 */}
+      {pickerOpen && (
+        <View className={styles.pickerMask} onClick={() => setPickerOpen(false)}>
+          <View
+            className={styles.pickerSheet}
+            onClick={(e) => { e.stopPropagation(); }}
+          >
+            <View className={styles.pickerHeader}>
+              <Text className={styles.pickerTitle}>
+                {pickerChapter ? pickerChapter.title : '选择章句写心得'}
+              </Text>
+              {pickerChapter && (
+                <Text className={styles.pickerBack} onClick={() => setPickerChapterId(null)}>‹ 返回篇章</Text>
+              )}
+            </View>
+            <ScrollView className={styles.pickerList} scrollY>
+              {pickerChapter ? (
+                pickerVerses.map(v => (
+                  <View key={v.id} className={styles.pickerVerse} onClick={() => handlePickVerse(v.id)}>
+                    <Text className={styles.pickerVerseNo}>{v.chapterId}-{v.order}</Text>
+                    <Text className={styles.pickerVerseText} numberOfLines={1}>{v.original}</Text>
+                  </View>
+                ))
+              ) : (
+                chapters.map(ch => (
+                  <View key={ch.id} className={styles.pickerChapter} onClick={() => setPickerChapterId(ch.id)}>
+                    <View className={styles.pickerChapterInfo}>
+                      <Text className={styles.pickerChapterTitle}>{ch.title}</Text>
+                      <Text className={styles.pickerChapterDesc} numberOfLines={1}>{ch.description}</Text>
+                    </View>
+                    <Text className={styles.pickerChapterArrow}>›</Text>
+                  </View>
+                ))
+              )}
+            </ScrollView>
+          </View>
+        </View>
       )}
     </ScrollView>
   );

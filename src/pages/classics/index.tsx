@@ -22,6 +22,9 @@ const ClassicsPage: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [activeTheme, setActiveTheme] = useState('全部');
   const [readVerseIds, setReadVerseIds] = useState<number[]>([]);
+  // 搜索框聚焦控制（P2-1：「搜原文」tab 点击后聚焦本页搜索框；
+  // 微信 Input 的 focus 需 false→true 切换才会重复聚焦，故点击时先关再开）
+  const [searchFocus, setSearchFocus] = useState(false);
 
   // 即时搜索结果（原文，来自轻量索引）
   const [instantResults, setInstantResults] = useState<SearchResult[]>([]);
@@ -114,6 +117,12 @@ const ClassicsPage: React.FC = () => {
     setSearchText('');
   }, []);
 
+  // 「搜原文」tab：聚焦本页搜索框（先置 false 再置 true，确保重复点击仍能聚焦）
+  const handleFocusSearch = useCallback(() => {
+    setSearchFocus(false);
+    setTimeout(() => setSearchFocus(true), 60);
+  }, []);
+
   // 译文/注释搜索：独立入口，跳转分包搜索页（加载完整章节数据，不进主包）
   const handleOpenDeepSearch = useCallback(() => {
     const kw = searchText.trim();
@@ -137,7 +146,12 @@ const ClassicsPage: React.FC = () => {
 
       {/* 搜索模式切换 */}
       <View className={styles.modeTabs}>
-        <Text className={classnames(styles.modeTab, styles.modeTabActive)}>搜原文</Text>
+        <Text
+          className={classnames(styles.modeTab, styles.modeTabActive)}
+          onClick={handleFocusSearch}
+        >
+          搜原文
+        </Text>
         <Text className={styles.modeTab} onClick={handleOpenDeepSearch}>搜译文/注释 ›</Text>
       </View>
 
@@ -150,6 +164,7 @@ const ClassicsPage: React.FC = () => {
           value={searchText}
           onInput={handleSearchInput}
           confirmType="search"
+          focus={searchFocus}
         />
         {isSearching && (
           <Text className={styles.clearBtn} onClick={handleClearSearch}>✕</Text>

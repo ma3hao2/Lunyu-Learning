@@ -121,3 +121,48 @@
   color: $color-text-tertiary;
   margin-top: 120rpx;
 }
+
+/* 搜索历史（P2-1） */
+.historySection {
+  padding: $spacing-lg $spacing-md;
+}
+
+.historyHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.historyTitle {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.historyClear {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.historyChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.historyChip {
+  padding: 8rpx 24rpx;
+  background: #f5f1ea;
+  border-radius: 32rpx;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+
+  &:active {
+    opacity: 0.7;
+  }
+}

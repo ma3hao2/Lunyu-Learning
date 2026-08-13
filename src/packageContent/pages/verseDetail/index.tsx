@@ -4,6 +4,7 @@ import Taro, { useRouter, useDidShow, useShareAppMessage } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import NoteCard from '@/components/NoteCard';
+import Skeleton from '@/components/Skeleton';
 import { loadVerse, versesIndex } from '@/data/versesLoader';
 import type { Verse, MyNote, PublishedNote } from '@/types';
 import { chapters } from '@/data/chapters';
@@ -117,8 +118,10 @@ const VerseDetailPage: React.FC = () => {
     // 用点击前的已读状态决定文案（markRead 对已读章句是幂等操作，不会重复标记）
     const wasRead = isRead(verseId);
     markRead(verseId);
+    // 激励文案（P2-3）：已读后带连续学习天数
+    const days = getProgress().totalReadDays;
     Taro.showToast({
-      title: wasRead ? '已读过啦' : '已标记为已读',
+      title: wasRead ? '已读过啦' : (days > 1 ? `已标记为已读 · 连续${days}天` : '已标记为已读'),
       icon: 'success',
       duration: 1500
     });
@@ -260,8 +263,11 @@ const VerseDetailPage: React.FC = () => {
               </View>
             </View>
           ) : (
+            /* 骨架屏（P2-5）：保持首节点为 View（Taro 崩溃规避约定，勿改回 Text） */
             <View className={styles.loadingWrap}>
-              <Text className={styles.originalText}>加载中...</Text>
+              <Skeleton height="48rpx" />
+              <Skeleton height="48rpx" width="88%" style={{ marginTop: '16rpx' }} />
+              <Skeleton height="32rpx" width="55%" style={{ marginTop: '24rpx' }} />
             </View>
           )}
         </View>

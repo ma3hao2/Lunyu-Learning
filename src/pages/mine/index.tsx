@@ -258,7 +258,7 @@ const MinePage: React.FC = () => {
             <Text className={styles.statLabel}>已读篇目</Text>
           </View>
           <View className={styles.statItem}>
-            <Text className={styles.statNumber}>{readCount === 0 ? 0 : totalReadDays}</Text>
+            <Text className={styles.statNumber}>{readCount === 0 ? 0 : totalReadDays} 🔥</Text>
             <Text className={styles.statLabel}>连续学习</Text>
           </View>
           <View className={styles.statItem}>
