@@ -296,7 +296,7 @@ export function updateNote(noteId: number, content: string, tags?: string[]): Le
   }
   note.content = content;
   note.tags = tags && tags.length > 0 ? tags : undefined;
-  note.updateTime = getTodayString();
+  note.updateTime = getNowString();
   if (!saveProgress(progress)) {
     throw new Error('保存失败，请重试');
   }

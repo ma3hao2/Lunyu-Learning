@@ -14,7 +14,8 @@ const PAGE_SIZE = 20; // 每页显示条数
 
 const SearchPage: React.FC = () => {
   const router = useRouter();
-  const initialKeyword = decodeURIComponent(router.params.keyword || '');
+  // 框架已在 onLoad 解码过 query 参数，直接使用；二次解码会让含 % 的关键词（如 50%）抛 URIError 白屏
+  const initialKeyword = router.params.keyword || '';
 
   const [searchText, setSearchText] = useState(initialKeyword);
   const [results, setResults] = useState<SearchResult[]>([]);
