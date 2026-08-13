@@ -1,0 +1,39 @@
+MIT License
+
+Copyright (c) 2026 论语学习团队
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## 数据版权声明（附加条款）
+
+本仓库中的《论语》**原文**属于公有领域（公版经典），可自由使用。
+
+仓库内的**白话译文、注释解读、核心要点**（`src/data/verses/` 目录及由其生成的
+压缩数据 `src/data/versesData.compressed.ts`）来源于**和合文化屋公众号**
+（数据来源说明见应用内「设置 → 数据来源」），其版权归原作者/公众号所有。
+
+上述内容**仅提供学习与个人研究使用**，未经版权方授权：
+- 不得用于商业用途（包括但不限于付费订阅、广告变现、企业定制分发）；
+- 不得二次分发、转售或在其基础上修改后对外发布（开源仓库内的再分发除外，但需保留本声明）。
+
+若你计划商用或大规模分发，请联系版权方获取授权。
+
+论语原文数据来源：lunyu8.cn 论语网

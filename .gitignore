@@ -8,6 +8,12 @@ lib/
 # 微信小程序上传私钥与认证凭证（敏感，禁止提交）
 .auth/
 
+# 微信开发者工具个人配置（可能含本机路径/账号信息，禁止提交）
+project.private.config.json
+
+# 本地云开发环境覆盖（含真实环境 ID，禁止提交）
+src/config/cloud.local.ts
+
 # Taro / SWC 缓存
 .swc/
 .pai/
