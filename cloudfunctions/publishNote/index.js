@@ -9,6 +9,37 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 const _ = db.command;
 
+/**
+ * 内容安全检查（微信内容安全接口 msgSecCheck v2，UGC 合规）
+ * - 命中违规（suggest=risky，或旧版约定错误码 87014）拒绝发布
+ * - 接口调用异常（网络/未开通等）保守放行并记日志，避免误伤正常用户
+ * 云调用方式无需自配 appid/secret；需云开发环境已开通内容安全能力。
+ * @returns {{ ok: boolean, message?: string }}
+ */
+async function checkContentSafe(openId, content, tags) {
+  // content ≤500 字 + tags ≤5 个，拼接后远低于接口 2500 字上限，slice 兜底
+  const text = [content, ...(tags || [])].join('\n').slice(0, 2500);
+  try {
+    const secRes = await cloud.openapi.security.msgSecCheck({
+      version: 2,
+      openid: openId,
+      scene: 3, // 3 = 论坛（UGC 社区场景）
+      content: text
+    });
+    const suggest = secRes && secRes.result && secRes.result.suggest;
+    if (suggest === 'risky') {
+      return { ok: false, message: '内容包含不合适的信息，请修改后再发布' };
+    }
+    return { ok: true }; // pass / review 均放行
+  } catch (e) {
+    if (e && e.errCode === 87014) {
+      return { ok: false, message: '内容包含不合适的信息，请修改后再发布' };
+    }
+    console.warn('[publishNote] msgSecCheck 调用失败（保守放行）:', e && (e.errCode || e.errMsg || e.message));
+    return { ok: true };
+  }
+}
+
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext();
   const openId = wxContext.OPENID;
@@ -21,6 +52,9 @@ exports.main = async (event, context) => {
       // 校验
       const err = validateNote(content, tags, verseId);
       if (err) return { code: -1, message: err };
+      // 内容安全检查（发布与编辑都校验，防止"先发正常再改成违规"绕过）
+      const sec = await checkContentSafe(openId, content, tags);
+      if (!sec.ok) return { code: -1, message: sec.message };
 
       const doc = {
         _openid: openId,
@@ -62,6 +96,9 @@ exports.main = async (event, context) => {
       if (!noteId) return { code: -1, message: '缺少 noteId' };
       const err = validateNote(content, tags);
       if (err) return { code: -1, message: err };
+      // 内容安全检查（编辑同样校验，防止改为违规内容）
+      const sec = await checkContentSafe(openId, content, tags);
+      if (!sec.ok) return { code: -1, message: sec.message };
       const existing = await db.collection('notes').doc(noteId).get();
       if (!existing.data || existing.data._openid !== openId) {
         return { code: -1, message: '无权操作' };

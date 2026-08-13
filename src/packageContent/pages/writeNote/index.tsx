@@ -181,10 +181,10 @@ const WriteNotePage: React.FC = () => {
       }
     }
 
-    // 3. 提示：本地已保存成功；云端若失败则追加说明
+    // 3. 提示：本地已保存成功；云端若失败则透传具体原因（如内容安全检查未通过）
     Taro.showToast({
       title: cloudError
-        ? (isPublic ? '已保存到本地，发布失败' : '已保存到本地，取消发布失败')
+        ? `已保存到本地：${cloudError}`
         : (isEditing ? '更新成功' : '保存成功'),
       icon: cloudError ? 'none' : 'success'
     });
