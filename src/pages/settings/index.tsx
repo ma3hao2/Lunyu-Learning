@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Switch } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
-import { saveProgress } from '@/utils/storage';
+import { saveProgress, clearPendingSync } from '@/utils/storage';
 import { getSettings, saveSettings, type AppSettings, type FontSize } from '@/utils/settings';
 import { syncProgressNow } from '@/services/sync';
 import { isLoggedIn, getUserInfo, clearCloudProgress } from '@/services/auth';
@@ -73,6 +73,8 @@ const SettingsPage: React.FC = () => {
       likedNoteIds: [],
       unlikedNoteIds: []
     });
+    // 取消 saveProgress 触发的 3 秒防抖上传，避免「清空云端」意图与自动上传时序冲突
+    clearPendingSync();
     let message = '数据已清空';
     let icon: 'success' | 'none' = 'success';
     // 已登录则同步清空云端，避免旧数据在下次同步时复活

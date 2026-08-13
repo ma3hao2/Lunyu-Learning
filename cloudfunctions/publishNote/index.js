@@ -49,12 +49,18 @@ exports.main = async (event, context) => {
     // ===== 发布心得 =====
     if (action === 'publish') {
       const { verseId, verseOriginal, chapterTitle, content, tags, authorName } = event;
+      // 强制 verseId 必填（validateNote 对 undefined 放行，这里前置拦截，避免笔记关联错乱）
+      if (!Number.isInteger(verseId) || verseId <= 0) return { code: -1, message: '章句ID无效' };
       // 校验
       const err = validateNote(content, tags, verseId);
       if (err) return { code: -1, message: err };
       // 内容安全检查（发布与编辑都校验，防止"先发正常再改成违规"绕过）
       const sec = await checkContentSafe(openId, content, tags);
       if (!sec.ok) return { code: -1, message: sec.message };
+      // authorName 由客户端传入，服务端做长度/类型兜底，防止伪造超长昵称
+      const safeAuthorName = (typeof authorName === 'string' && authorName.trim())
+        ? authorName.trim().slice(0, 20)
+        : '论语学习者';
 
       const doc = {
         _openid: openId,
@@ -63,7 +69,7 @@ exports.main = async (event, context) => {
         chapterTitle: chapterTitle || '',
         content,
         tags: tags || [],
-        authorName: authorName || '论语学习者',
+        authorName: safeAuthorName,
         likeCount: 0,
         createTime: new Date().toISOString()
       };

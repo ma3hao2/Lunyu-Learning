@@ -58,8 +58,10 @@ const HomePage: React.FC = () => {
   }, []);
 
   const readChapters = useMemo(() => {
+    // 先建 Set 再过滤（对齐 classics 页写法），避免 filter 内 includes 线性扫描 O(n×m)
+    const readSet = new Set(readVerseIds);
     const readChapterIds = new Set(
-      versesIndex.filter(v => readVerseIds.includes(v.id)).map(v => v.chapterId)
+      versesIndex.filter(v => readSet.has(v.id)).map(v => v.chapterId)
     );
     return readChapterIds.size;
   }, [readVerseIds]);

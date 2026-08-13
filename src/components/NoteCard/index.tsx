@@ -41,7 +41,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onLike, onClick }) => {
       {(note.chapterTitle || note.verseOriginal) && (
         <View className={styles.source}>
           <Text className={styles.sourceText} selectable>
-            {note.chapterTitle ? `${note.chapterTitle} · ` : ''}{note.verseOriginal.slice(0, 20)}...
+            {note.chapterTitle ? `${note.chapterTitle} · ` : ''}{(note.verseOriginal || '').slice(0, 20)}...
           </Text>
         </View>
       )}

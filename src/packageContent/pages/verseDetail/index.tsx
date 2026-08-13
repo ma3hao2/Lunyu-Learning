@@ -130,11 +130,14 @@ const VerseDetailPage: React.FC = () => {
   // 字号调节：A- 降一档 / A+ 升一档（循环），保存到设置（阅读中随手调，符合阅读习惯）
   const FONT_SIZES: FontSize[] = ['normal', 'large', 'xl'];
   const adjustFontSize = useCallback((delta: 1 | -1) => {
-    const idx = FONT_SIZES.indexOf(fontSize);
-    const next = FONT_SIZES[(idx + delta + FONT_SIZES.length) % FONT_SIZES.length];
-    setFontSize(next);
-    saveSettings({ ...getSettings(), fontSize: next });
-  }, [fontSize]);
+    // 函数式更新：基于最新 state 计算下一档，连点时不会因闭包中的旧 fontSize 丢档
+    setFontSize(prev => {
+      const idx = FONT_SIZES.indexOf(prev);
+      const next = FONT_SIZES[(idx + delta + FONT_SIZES.length) % FONT_SIZES.length];
+      saveSettings({ ...getSettings(), fontSize: next });
+      return next;
+    });
+  }, []);
 
   // 上一句 / 下一句：同页切换 verseId（避免 redirectTo 整页重挂载 + 重复拉云函数）
   const verseIdx = useMemo(() => versesIndex.findIndex(v => v.id === verseId), [verseId]);

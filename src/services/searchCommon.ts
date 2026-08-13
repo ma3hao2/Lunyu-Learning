@@ -66,7 +66,7 @@ export function extractContext(text: string, kw: string, maxLen: number): string
   if (!text) return '';
   const idx = text.indexOf(kw);
   if (idx === -1) return truncate(text, maxLen);
-  const half = Math.floor((maxLen - kw.length) / 2);
+  const half = Math.max(0, Math.floor((maxLen - kw.length) / 2));
   const start = Math.max(0, idx - half);
   const end = Math.min(text.length, start + maxLen);
   let result = text.substring(start, end);

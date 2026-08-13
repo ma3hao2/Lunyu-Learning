@@ -223,6 +223,9 @@ export function inflateRaw(data: Uint8Array): Uint8Array {
         const li = sym - 257;
         const length = LENGTH_BASE[li] + rd.readBits(LENGTH_EXTRA[li]);
         const d = decodeSymbol(rd, distTable);
+        // 距离符号上界校验：DIST_BASE 仅 30 项（0-29），损坏流给保留符号 30/31 赋码时
+        // DIST_BASE[d] 为 undefined，NaN 会让下方回引距离校验失效并静默写出错误数据
+        if (d >= DIST_BASE.length) throw new Error('inflate: 非法距离符号');
         const dist = DIST_BASE[d] + rd.readBits(DIST_EXTRA[d]);
         if (dist > outLen) throw new Error('inflate: 回引距离超出已输出长度');
         ensure(length);
