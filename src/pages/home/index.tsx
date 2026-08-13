@@ -6,7 +6,7 @@ import ProgressBar from '@/components/ProgressBar';
 import Skeleton from '@/components/Skeleton';
 import { versesIndex, type VerseIndex } from '@/data/versesIndex';
 import { chapters } from '@/data/chapters';
-import { getTodayRecommend, getAlternativeRecommend } from '@/data/dailyRecommend';
+import { getTodayRecommend } from '@/data/dailyRecommend';
 import { getProgress } from '@/utils/storage';
 
 const HomePage: React.FC = () => {
@@ -87,11 +87,6 @@ const HomePage: React.FC = () => {
     Taro.navigateTo({ url: `/packageContent/pages/verseDetail/index?id=${dailyVerse.id}` });
   };
 
-  // 换一批：保持今日主题不变，同篇章内换一句（不重复当前句）
-  const handleShuffle = useCallback(() => {
-    setDailyRecommend(getAlternativeRecommend(dailyRecommend.chapterId, dailyRecommend.verseId));
-  }, [dailyRecommend.chapterId, dailyRecommend.verseId]);
-
   const handleClassicClick = (verseId: number) => {
     Taro.navigateTo({ url: `/packageContent/pages/verseDetail/index?id=${verseId}` });
   };
@@ -142,9 +137,6 @@ const HomePage: React.FC = () => {
         )}
         <Text className={styles.dailyChapter}>{dailyRecommend.chapterTitle}</Text>
         <View className={styles.dailyActions}>
-          <View className={styles.dailyBtn} onClick={(e) => { e.stopPropagation(); handleShuffle(); }}>
-            <Text className={styles.dailyBtnText}>换一批</Text>
-          </View>
           <View className={styles.dailyBtn} onClick={(e) => { e.stopPropagation(); handleDailyClick(); }}>
             <Text className={styles.dailyBtnText}>开始学习 ›</Text>
           </View>
