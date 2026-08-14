@@ -17,7 +17,7 @@ const PrivacyPage: React.FC = () => {
     <ScrollView className={styles.container} scrollY enhanced bounces>
       <View className={styles.section}>
         <Text className={styles.h2}>隐私政策</Text>
-        <Text className={styles.p}>更新日期：2026-08-13</Text>
+        <Text className={styles.p}>更新日期：2026-08-14</Text>
         <Text className={styles.p}>
           本小程序（「论语学习」）由论语学习团队提供。我们重视你的隐私，本政策说明我们收集和使用哪些信息。
         </Text>
@@ -27,6 +27,7 @@ const PrivacyPage: React.FC = () => {
         <Text className={styles.h3}>1. 我们收集的信息</Text>
         <Text className={styles.p}>- 学习进度（已读章句、笔记），默认仅保存在你的设备本地；</Text>
         <Text className={styles.p}>- 微信登录信息（openId、昵称、头像），用于云端同步学习进度与笔记；</Text>
+        <Text className={styles.p}>- 剪贴板：在「设置 → 数据来源」复制链接时使用（仅在你点击复制时写入，本小程序不读取剪贴板内容）；</Text>
       </View>
 
       <View className={styles.section}>

@@ -118,6 +118,7 @@ const SettingsPage: React.FC = () => {
 
   // 复制数据来源链接到剪贴板（小程序无法直接打开公众号外链）
   // setClipboardData 属微信隐私接口：先确保用户已同意隐私协议（未声明/未授权会 errno 112 失败）
+  // 注意：须在微信后台「用户隐私保护指引」声明「剪贴板（用于复制数据来源链接）」，否则走 fail 兜底
   const handleDataSource = async () => {
     const authorized = await ensurePrivacyAuthorized();
     if (!authorized) {
@@ -128,6 +129,10 @@ const SettingsPage: React.FC = () => {
       data: DATA_SOURCE_URL,
       success: () => {
         Taro.showToast({ title: '链接已复制', icon: 'success' });
+      },
+      fail: () => {
+        // 后台隐私指引未声明剪贴板 scope 时微信直接拒绝（errno 112），静默提示不崩溃
+        Taro.showToast({ title: '复制失败，请稍后重试', icon: 'none' });
       }
     });
   };
