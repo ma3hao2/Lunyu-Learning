@@ -106,8 +106,9 @@
 </div>
 
 <script>
-const localIP = '127.0.0.1';
-const port = '10087';
+// 自动取当前访问主机与端口，避免把开发机内网 IP 写死进源码/仓库（脱敏：2026-08 移除硬编码 IP）
+const localIP = location.hostname || 'localhost';
+const port = location.port || '10087';
 const localUrl = 'http://' + localIP + ':' + port + '/';
 
 document.getElementById('qrImg').src =

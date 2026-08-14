@@ -30,6 +30,9 @@ backups/
 scripts/lunyu8_data.json
 scripts/extracted_verses.txt
 
+# 个人学习心得原文（含个人微信号等隐私，不入库；提炼版为产品数据源，保留入库）
+论语学习心得/
+
 # 本机工具运行时状态（会话/主题元数据，不入库）
 .reasonix/desktop-topic-*.json
 .reasonix/tasks/
