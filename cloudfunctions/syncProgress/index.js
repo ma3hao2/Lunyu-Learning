@@ -149,9 +149,10 @@ function mergeProgress(cloudProgress, localProgress) {
     : (cloudProgress.lastReadDate || localProgress.lastReadDate);
 
   // 最后阅读位置：优先取「存在 lastReadVerseId」的一侧（老云端数据可能缺该字段）；
-  // 两侧都有/都没有时跟随「最后学习日期」较新的一侧，日期相等时偏取本地（本地更可能是刚读的位置）
+  // 两侧都有/都没有时跟随「最后学习日期」较新的一侧，日期相等时偏取本地（本地更可能是刚读的位置）。
+  // 与 storage.ts mergeProgress 保持同方向（修复 OCR 审查发现的比较反转：日期不同时曾误取旧侧）
   const newerSide = (cloudProgress.lastReadDate && localProgress.lastReadDate)
-    ? (cloudProgress.lastReadDate >= localProgress.lastReadDate ? localProgress : cloudProgress)
+    ? (localProgress.lastReadDate >= cloudProgress.lastReadDate ? localProgress : cloudProgress)
     : (localProgress.lastReadDate ? localProgress : cloudProgress);
   const lastReadVerseId = (localProgress.lastReadVerseId && !cloudProgress.lastReadVerseId)
     ? localProgress.lastReadVerseId

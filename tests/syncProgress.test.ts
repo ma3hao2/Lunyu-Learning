@@ -108,6 +108,92 @@ describe('syncProgress 云函数', () => {
     ]);
   });
 
+  // 回归锁定（OCR 审查 P0-OCR-1）：newerSide 曾比较反转，日期不同时误取旧侧 lastReadVerseId
+  test('upload: lastReadVerseId 跟随较新的 lastReadDate 一侧（云端较新取云端）', async () => {
+    db.__setExisting([{
+      _id: 'd1',
+      progress: {
+        ...baseProgress,
+        lastReadDate: '2026-08-15',
+        lastReadVerseId: 501
+      }
+    }]);
+    const res = await main({
+      action: 'upload',
+      progress: {
+        ...baseProgress,
+        lastReadDate: '2026-08-10',
+        lastReadVerseId: 101
+      }
+    }, {});
+    expect(res.code).toBe(0);
+    // 旧实现（cloud >= local ? local : cloud）会错误地取本地旧位置 101
+    expect(db.__calls.update[0].data.progress.lastReadVerseId).toBe(501);
+  });
+
+  test('upload: lastReadVerseId 跟随较新的 lastReadDate 一侧（本地较新取本地）', async () => {
+    db.__setExisting([{
+      _id: 'd1',
+      progress: {
+        ...baseProgress,
+        lastReadDate: '2026-08-10',
+        lastReadVerseId: 501
+      }
+    }]);
+    const res = await main({
+      action: 'upload',
+      progress: {
+        ...baseProgress,
+        lastReadDate: '2026-08-15',
+        lastReadVerseId: 101
+      }
+    }, {});
+    expect(res.code).toBe(0);
+    expect(db.__calls.update[0].data.progress.lastReadVerseId).toBe(101);
+  });
+
+  test('upload: lastReadDate 相等时偏取本地（刚读位置更可能是本机）', async () => {
+    db.__setExisting([{
+      _id: 'd1',
+      progress: {
+        ...baseProgress,
+        lastReadDate: '2026-08-15',
+        lastReadVerseId: 501
+      }
+    }]);
+    const res = await main({
+      action: 'upload',
+      progress: {
+        ...baseProgress,
+        lastReadDate: '2026-08-15',
+        lastReadVerseId: 101
+      }
+    }, {});
+    expect(res.code).toBe(0);
+    expect(db.__calls.update[0].data.progress.lastReadVerseId).toBe(101);
+  });
+
+  test('upload: 仅一侧有 lastReadDate 时跟随有日期的一侧', async () => {
+    db.__setExisting([{
+      _id: 'd1',
+      progress: {
+        ...baseProgress,
+        lastReadDate: '2026-08-15',
+        lastReadVerseId: 501
+      }
+    }]);
+    const res = await main({
+      action: 'upload',
+      progress: {
+        ...baseProgress,
+        lastReadDate: undefined,
+        lastReadVerseId: 101
+      }
+    }, {});
+    expect(res.code).toBe(0);
+    expect(db.__calls.update[0].data.progress.lastReadVerseId).toBe(501);
+  });
+
   test('upload: 缺 progress 拒绝', async () => {
     const res = await main({ action: 'upload' }, {});
     expect(res.code).toBe(-1);
