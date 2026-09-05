@@ -30,7 +30,8 @@
     "dev:qq": "npm run build:qq -- --watch",
     "dev:jd": "npm run build:jd -- --watch",
     "dev:quickapp": "npm run build:quickapp -- --watch",
-    "data:compress": "node scripts/compress_verses.cjs"
+    "data:compress": "node scripts/compress_verses.cjs",
+    "data:sync-en": "node scripts/sync-en-data.mjs"
   },
   "browserslist": [
     "last 3 versions",

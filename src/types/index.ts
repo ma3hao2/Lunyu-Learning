@@ -19,6 +19,26 @@ export interface Verse {
   keyPoint: string;    // 核心要点
 }
 
+// 界面语言（设备维度设置；zh 中文 / en 英文）
+export type Language = 'zh' | 'en';
+
+// 英文章句（与 Verse 按 id 对齐；原文文言共用不重存，chapterId/order 由中文 versesIndex 提供）
+export interface VerseEn {
+  id: number;
+  translation: string; // 英文译文
+  commentary: string;  // 英文注释解读（--- 分节、【解读】→【Interpretation】）
+  keyPoint: string;    // 英文核心要点（; 分隔）
+}
+
+// 英文章节（与 Chapter 按 id 对齐；theme 保留中文作为筛选关联键，展示时经 THEME_EN 映射）
+export interface ChapterEn {
+  id: number;
+  title: string;       // Xue Er · Learning
+  subTitle: string;    // Xue Er
+  theme: string;       // 中文主题词（筛选关联键）
+  description: string; // 英文篇章简介
+}
+
 // 每日推荐（方案 E：按主题轮换，theme 由篇章唯一映射）
 export interface DailyRecommend {
   verseId: number;
