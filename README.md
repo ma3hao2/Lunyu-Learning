@@ -16,9 +16,11 @@
 
 | 端 | 壳 | 构建产物 |
 |---|---|---|
-| 微信小程序 | 微信运行时 | `npm run build:weapp` |
-| Windows | Electron（`desktop/`，托管 H5 产物） | `npm run build:h5` → `cd desktop && npm run dist` |
-| 安卓 APK | Capacitor 7（`../lunyu-android/`，托管 H5 产物） | `npm run build:h5` → 拷入 www → `cap sync` → `gradlew assembleRelease` |
+| 微信小程序 | 微信运行时 | `npm run build:weapp` → `dist/` |
+| Windows | Electron（`desktop/`，托管 H5 产物） | `npm run build:h5` → `dist-h5/` → `cd desktop && npm run dist` |
+| 安卓 APK | Capacitor 7（`../lunyu-android/`，托管 H5 产物） | `npm run build:h5` → `dist-h5/` 拷入 www → `cap sync` → `gradlew assembleRelease` |
+
+> 构建输出按端分离（weapp → `dist/`，h5 → `dist-h5/`），Taro 构建会清空输出目录，分离后两端互不覆盖；微信开发者工具预览小程序前只需保证跑过 `build:weapp`。
 
 ## 技术栈
 

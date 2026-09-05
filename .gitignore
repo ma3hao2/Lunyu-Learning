@@ -1,8 +1,9 @@
 # 依赖
 node_modules/
 
-# 构建产物
+# 构建产物（dist 为 weapp，dist-h5 为 H5/exe/APK 壳产物）
 dist/
+dist-h5/
 lib/
 
 # 微信小程序上传私钥与认证凭证（敏感，禁止提交）

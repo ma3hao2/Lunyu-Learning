@@ -8,7 +8,7 @@ const fs = require('fs');
 // 打包后 H5 产物位于 resources/dist；开发模式位于上级目录 dist
 const DIST_DIR = app.isPackaged
   ? path.join(process.resourcesPath, 'dist')
-  : path.join(__dirname, '..', 'dist');
+  : path.join(__dirname, '..', 'dist-h5');
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',

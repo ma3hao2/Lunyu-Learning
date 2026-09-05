@@ -29,7 +29,7 @@
     ],
     "extraResources": [
       {
-        "from": "../dist",
+        "from": "../dist-h5",
         "to": "dist"
       }
     ],

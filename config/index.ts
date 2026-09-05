@@ -2,7 +2,6 @@ import { defineConfig, type UserConfigExport } from '@tarojs/cli';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import devConfig from './dev';
 import prodConfig from './prod';
-import vitePluginImp from 'vite-plugin-imp';
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数
 export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
   const baseConfig: UserConfigExport<'webpack5'> = {
@@ -16,7 +15,11 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
       828: 1.81 / 2,
     },
     sourceRoot: 'src',
-    outputRoot: process.env.TARO_OUTPUT_DIR || 'dist',
+    // 输出目录按端分离：weapp 用 dist/（微信开发者工具 project.config.json 的 miniprogramRoot），
+    // h5 用 dist-h5/（Windows Electron / 安卓 Capacitor 壳的托管产物）。
+    // Taro 每次构建会清空输出目录，共用一个目录会让两端产物互相覆盖（如 h5 构建清掉 dist/app.json）。
+    // 可用环境变量 TARO_OUTPUT_DIR 显式覆盖。
+    outputRoot: process.env.TARO_OUTPUT_DIR || (process.env.TARO_ENV === 'h5' ? 'dist-h5' : 'dist'),
     plugins: ['@tarojs/plugin-html'],
     defineConstants: {},
     copy: {
