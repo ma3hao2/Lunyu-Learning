@@ -11,6 +11,30 @@
   padding: $spacing-lg 0 $spacing-md;
 }
 
+// 常驻语言切换（右上角胶囊，自指标签：两种语言下显示相同）
+.langSwitch {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-xs;
+}
+
+.langOption {
+  font-size: $font-size-sm;
+  line-height: 1;
+  padding: 8rpx 24rpx;
+  border-radius: $radius-round;
+  border: 1rpx solid $color-border;
+  color: $color-text-secondary;
+  background: #fff;
+}
+
+.langOptionActive {
+  color: #fff;
+  background: $color-primary;
+  border-color: $color-primary;
+}
+
 .appTitle {
   display: block;
   font-size: $font-size-xxl;

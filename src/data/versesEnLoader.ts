@@ -4,8 +4,9 @@ import { VERSES_EN_BLOB_B64 } from './versesEnData.compressed';
 import { base64ToBytes, inflateRaw, utf8Decode } from '@/utils/inflate';
 
 // 英文章句数据：懒解压（英文模式首次取值时解码一次，之后命中缓存）
-// 设计约束与 versesLoader 相同：本模块只被分包页面/服务静态引用，压缩 blob 不进主包。
-// 英文数据与中文按 id 对齐（id 照抄中文源），chapterId 由中文 versesIndex 提供，此处不重存。
+// 落位说明：中文 851KB blob 保持在分包（versesLoader），英文 316KB blob 随主包——
+// 首页（主包）在英文模式下需即时展示每日推荐/续读/经典名句的英文译文，跨包异步加载不可行；
+// 英文模式外不解压不占内存。英文数据与中文按 id 对齐（id 照抄中文源），chapterId 由中文 versesIndex 提供。
 let fullData: VerseEn[] | null = null;
 // 单条查询索引（id → verseEn）
 let verseMap: Map<number, VerseEn> | null = null;

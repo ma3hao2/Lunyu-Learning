@@ -58,6 +58,8 @@ export const messages = {
   'home.qSettings': { zh: '设置', en: 'Settings' },
   'home.qSettingsDesc': { zh: '数据管理', en: 'Data & preferences' },
   'home.classics': { zh: '经典名句', en: 'Classic Quotes' },
+  'home.langZh': { zh: '中文', en: '中文' },
+  'home.langEn': { zh: 'EN', en: 'EN' },
 
   // 论语目录页
   'classics.title': { zh: '论语二十篇', en: 'The Twenty Books' },

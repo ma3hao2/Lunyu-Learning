@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
+import classnames from 'classnames';
 import styles from './index.module.scss';
 import ProgressBar from '@/components/ProgressBar';
 import Skeleton from '@/components/Skeleton';
@@ -8,10 +9,12 @@ import { versesIndex, type VerseIndex } from '@/data/versesIndex';
 import { chapters } from '@/data/chapters';
 import { getTodayRecommend } from '@/data/dailyRecommend';
 import { getProgress } from '@/utils/storage';
+import { loadAllVersesEn } from '@/data/versesEnLoader';
 import { useI18n } from '@/i18n';
+import type { Language, VerseEn } from '@/types';
 
 const HomePage: React.FC = () => {
-  const { t, theme, chapterTitle } = useI18n();
+  const { t, theme, chapterTitle, lang, setLang } = useI18n();
   const [readCount, setReadCount] = useState(0);
   const [totalReadDays, setTotalReadDays] = useState(1);
   const [noteCount, setNoteCount] = useState(() => getProgress().myNotes.length);
@@ -27,6 +30,31 @@ const HomePage: React.FC = () => {
     setTotalReadDays(progress.totalReadDays || 1);
     setNoteCount(progress.myNotes.length);
   }, []);
+
+  // 英文模式：加载英文章句数据（blob 随主包，仅英文模式解压一次并缓存；缺失/失败回退文言原文）
+  const [enById, setEnById] = useState<Map<number, VerseEn> | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    if (lang !== 'en') {
+      setEnById(null);
+      return;
+    }
+    loadAllVersesEn()
+      .then(list => { if (!cancelled) setEnById(new Map(list.map(v => [v.id, v]))); })
+      .catch(() => { if (!cancelled) setEnById(null); });
+    return () => { cancelled = true; };
+  }, [lang]);
+
+  // 章句展示文本：英文模式用英文译文替换文言原文（缺失回退原文，与 web 版首页口径一致）
+  const displayText = useCallback((v: VerseIndex): string => {
+    if (lang !== 'en') return v.original;
+    return enById?.get(v.id)?.translation || v.original;
+  }, [lang, enById]);
+
+  // 首页常驻语言切换（与设置页共用 Provider 状态；Provider 内已持久化并刷新 tabBar）
+  const handleLangSwitch = (next: Language) => {
+    if (next !== lang) setLang(next);
+  };
 
   useDidShow(() => {
     // 导航栏标题随语言刷新（tab 页标题走原生导航栏）
@@ -112,6 +140,21 @@ const HomePage: React.FC = () => {
     <ScrollView className={styles.container} scrollY enhanced bounces>
       {/* 顶部标题 */}
       <View className={styles.header}>
+        {/* 常驻语言切换：无需进设置页即可中/英切换 */}
+        <View className={styles.langSwitch}>
+          <Text
+            className={classnames(styles.langOption, lang === 'zh' && styles.langOptionActive)}
+            onClick={() => handleLangSwitch('zh')}
+          >
+            {t('home.langZh')}
+          </Text>
+          <Text
+            className={classnames(styles.langOption, lang === 'en' && styles.langOptionActive)}
+            onClick={() => handleLangSwitch('en')}
+          >
+            {t('home.langEn')}
+          </Text>
+        </View>
         <Text className={styles.appTitle}>{t('app.brand')}</Text>
         <Text className={styles.appSubtitle}>{t('app.subtitle')}</Text>
       </View>
@@ -131,7 +174,7 @@ const HomePage: React.FC = () => {
           <Text className={styles.dailyTag}>{theme(dailyRecommend.theme)}</Text>
         </View>
         {dailyVerse ? (
-          <Text className={styles.dailyOriginal}>{dailyVerse.original}</Text>
+          <Text className={styles.dailyOriginal}>{displayText(dailyVerse)}</Text>
         ) : (
           /* 骨架屏（P2-5）：数据未就绪时的加载占位 */
           <View className={styles.dailySkeleton}>
@@ -154,7 +197,7 @@ const HomePage: React.FC = () => {
             <Text className={styles.dailyLabelIcon}>续</Text>
             <Text className={styles.dailyLabelText}>{t('home.continue')}</Text>
           </View>
-          <Text className={styles.dailyOriginal} numberOfLines={2}>{lastReadVerse.original}</Text>
+          <Text className={styles.dailyOriginal} numberOfLines={2}>{displayText(lastReadVerse)}</Text>
           <View className={styles.dailyBtn}>
             <Text className={styles.dailyBtnText}>{chapterTitle(lastReadVerse.chapterId, lastReadVerse.chapterTitle)} · {lastReadVerse.chapterId}-{lastReadVerse.order} ›</Text>
           </View>
@@ -240,7 +283,7 @@ const HomePage: React.FC = () => {
             className={styles.classicCard}
             onClick={() => handleClassicClick(verse.id)}
           >
-            <Text className={styles.classicOriginal}>{verse.original}</Text>
+            <Text className={styles.classicOriginal}>{displayText(verse)}</Text>
           </View>
         ))}
       </View>
