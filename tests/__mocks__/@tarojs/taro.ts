@@ -24,6 +24,9 @@ const Taro = {
   navigateBack: jest.fn(),
   switchTab: jest.fn(),
   redirectTo: jest.fn(),
+  // 原生界面文案（i18n：tabBar / 导航栏标题）
+  setTabBarItem: jest.fn(),
+  setNavigationBarTitle: jest.fn(),
   // 登录
   login: jest.fn(),
   // 隐私授权（P1-5：微信隐私保护框架，基础库 2.32.3+）
@@ -70,6 +73,8 @@ export const redirectTo = Taro.redirectTo;
 export const getPrivacySetting = Taro.getPrivacySetting;
 export const requirePrivacyAuthorize = Taro.requirePrivacyAuthorize;
 export const openPrivacyContract = Taro.openPrivacyContract;
+export const setTabBarItem = Taro.setTabBarItem;
+export const setNavigationBarTitle = Taro.setNavigationBarTitle;
 export const eventCenter = Taro.eventCenter;
 export const useDidShow = Taro.useDidShow;
 export const useDidHide = Taro.useDidHide;

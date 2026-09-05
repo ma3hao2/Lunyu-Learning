@@ -8,26 +8,41 @@ import { saveProgress, clearPendingSync } from '@/utils/storage';
 import { getSettings, saveSettings, type AppSettings, type FontSize } from '@/utils/settings';
 import { syncProgressNow } from '@/services/sync';
 import { isLoggedIn, getUserInfo, clearCloudProgress, ensurePrivacyAuthorized } from '@/services/auth';
-import type { UserInfo } from '@/types';
+import { useI18n } from '@/i18n';
+import type { Language, UserInfo } from '@/types';
 
-const FONT_OPTIONS: { value: FontSize; label: string }[] = [
-  { value: 'normal', label: '标准' },
-  { value: 'large', label: '大' },
-  { value: 'xl', label: '特大' }
+const FONT_OPTIONS: { value: FontSize }[] = [
+  { value: 'normal' },
+  { value: 'large' },
+  { value: 'xl' }
 ];
+
+// 界面语言选项（label 经 t() 取值：英文模式下「中文」选项保持原样，便于切回）
+const LANGUAGE_OPTIONS: { value: Language }[] = [
+  { value: 'zh' },
+  { value: 'en' }
+];
+
+const FONT_LABEL_KEYS = {
+  normal: 'settings.fontNormal',
+  large: 'settings.fontLarge',
+  xl: 'settings.fontXl'
+} as const;
 
 // 数据来源：和合文化屋公众号（文章专辑链接，小程序内无法直接打开外链，采用复制方式提供）
 const DATA_SOURCE_URL = 'https://mp.weixin.qq.com/mp/appmsgalbum?action=getalbum&__biz=MzUzNTkyNjQyMA==&scene=1&album_id=1337086542606696448&count=3#wechat_redirect';
 
 const SettingsPage: React.FC = () => {
+  const { t, lang, setLang } = useI18n();
   const [settings, setSettings] = useState<AppSettings>(() => getSettings());
   const [user, setUser] = useState<UserInfo | null>(() => getUserInfo());
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  // 从设置页返回时同步最新状态
+  // 从设置页返回时同步最新状态；导航栏标题随语言刷新
   useDidShow(() => {
     setSettings(getSettings());
     setUser(getUserInfo());
+    Taro.setNavigationBarTitle({ title: t('settings.title') });
   });
 
   const applySettings = useCallback((patch: Partial<AppSettings>) => {
@@ -43,19 +58,19 @@ const SettingsPage: React.FC = () => {
   // 手动双向同步（下载 → 合并写回本地 → 上传）
   const handleSync = useCallback(async () => {
     if (!isLoggedIn()) {
-      Taro.showToast({ title: '请先登录', icon: 'none' });
+      Taro.showToast({ title: t('settings.pleaseLogin'), icon: 'none' });
       return;
     }
-    Taro.showLoading({ title: '同步中...' });
+    Taro.showLoading({ title: t('settings.syncing') });
     try {
       const res = await syncProgressNow();
       Taro.hideLoading();
       Taro.showToast({ title: res.message, icon: res.success ? 'success' : 'none' });
     } catch (e) {
       Taro.hideLoading();
-      Taro.showToast({ title: '同步失败', icon: 'none' });
+      Taro.showToast({ title: t('settings.syncFailed'), icon: 'none' });
     }
-  }, []);
+  }, [t]);
 
   const handleClearData = () => {
     setShowClearConfirm(true);
@@ -76,18 +91,18 @@ const SettingsPage: React.FC = () => {
     });
     // 取消 saveProgress 触发的 3 秒防抖上传，避免「清空云端」意图与自动上传时序冲突
     clearPendingSync();
-    let message = '数据已清空';
+    let message = t('settings.cleared');
     let icon: 'success' | 'none' = 'success';
     // 已登录则同步清空云端，避免旧数据在下次同步时复活
     if (isLoggedIn()) {
       try {
         const res = await clearCloudProgress();
         if (!res.success) {
-          message = '本地已清空，云端清理失败';
+          message = t('settings.clearedCloudFailed');
           icon = 'none';
         }
       } catch (e) {
-        message = '本地已清空，云端清理失败';
+        message = t('settings.clearedCloudFailed');
         icon = 'none';
       }
     }
@@ -98,7 +113,7 @@ const SettingsPage: React.FC = () => {
         Taro.navigateBack();
       }
     }, 2000);
-  }, []);
+  }, [t]);
 
   const cancelClear = () => {
     setShowClearConfirm(false);
@@ -110,10 +125,10 @@ const SettingsPage: React.FC = () => {
 
   const handleAbout = () => {
     Taro.showModal({
-      title: '关于论语学习',
-      content: '版本：1.0.0\n\n一款专注于《论语》学习的微信小程序，提供原文、译文、注释解读及学习笔记功能。\n\n数据来源：和合文化屋公众号（见「数据来源」入口复制链接）',
+      title: t('settings.aboutTitle'),
+      content: t('settings.aboutContent'),
       showCancel: false,
-      confirmText: '知道了'
+      confirmText: t('common.known')
     });
   };
 
@@ -123,19 +138,26 @@ const SettingsPage: React.FC = () => {
   const handleDataSource = async () => {
     const authorized = await ensurePrivacyAuthorized();
     if (!authorized) {
-      Taro.showToast({ title: '需同意隐私政策后才能复制', icon: 'none' });
+      Taro.showToast({ title: t('settings.privacyNeededCopy'), icon: 'none' });
       return;
     }
     Taro.setClipboardData({
       data: DATA_SOURCE_URL,
       success: () => {
-        Taro.showToast({ title: '链接已复制', icon: 'success' });
+        Taro.showToast({ title: t('settings.linkCopied'), icon: 'success' });
       },
       fail: () => {
         // 后台隐私指引未声明剪贴板 scope 时微信直接拒绝（errno 112），静默提示不崩溃
-        Taro.showToast({ title: '复制失败，请稍后重试', icon: 'none' });
+        Taro.showToast({ title: t('settings.copyFailed'), icon: 'none' });
       }
     });
+  };
+
+  // 切换界面语言（设置持久化在 applySettings 内完成，Provider 的 setLang 负责状态与 tabBar 刷新）
+  const handleLanguageChange = (next: Language) => {
+    if (next === settings.language) return;
+    setLang(next);
+    applySettings({ language: next });
   };
 
   return (
@@ -144,22 +166,22 @@ const SettingsPage: React.FC = () => {
       <BackHeader />
       {/* 页面标题 */}
       <View className={styles.header}>
-        <Text className={styles.title}>设置</Text>
+        <Text className={styles.title}>{t('settings.title')}</Text>
       </View>
 
       {/* 账号与同步 */}
       <View className={styles.section}>
-        <Text className={styles.sectionTitle}>账号与同步</Text>
+        <Text className={styles.sectionTitle}>{t('settings.sectionAccount')}</Text>
         <View className={styles.menuItem}>
           <View className={styles.menuIcon}>
             <Text className={styles.menuIconText}>{user ? (user.nickName || '学').charAt(0) : '未'}</Text>
           </View>
           <View className={styles.menuInfo}>
-            <Text className={styles.menuText}>{user ? (user.nickName || '论语学习者') : '未登录'}</Text>
-            <Text className={styles.menuDesc}>{user ? '已开启云端同步' : '登录后同步学习进度到云端'}</Text>
+            <Text className={styles.menuText}>{user ? (user.nickName || t('mine.defaultNick')) : t('settings.notLoggedIn')}</Text>
+            <Text className={styles.menuDesc}>{user ? t('settings.cloudSyncOn') : t('mine.loginDesc')}</Text>
           </View>
           {!user && (
-            <Text className={styles.menuAction} onClick={goLogin}>去登录</Text>
+            <Text className={styles.menuAction} onClick={goLogin}>{t('settings.goLogin')}</Text>
           )}
         </View>
         <View className={styles.menuItem} onClick={handleSync}>
@@ -167,8 +189,8 @@ const SettingsPage: React.FC = () => {
             <Text className={styles.menuIconText}>同</Text>
           </View>
           <View className={styles.menuInfo}>
-            <Text className={styles.menuText}>同步学习进度</Text>
-            <Text className={styles.menuDesc}>下载并上传合并云端数据</Text>
+            <Text className={styles.menuText}>{t('settings.syncNow')}</Text>
+            <Text className={styles.menuDesc}>{t('settings.syncNowDesc')}</Text>
           </View>
           <Text className={styles.menuArrow}>›</Text>
         </View>
@@ -177,8 +199,8 @@ const SettingsPage: React.FC = () => {
             <Text className={styles.menuIconText}>自</Text>
           </View>
           <View className={styles.menuInfo}>
-            <Text className={styles.menuText}>自动同步</Text>
-            <Text className={styles.menuDesc}>保存进度后自动上传云端</Text>
+            <Text className={styles.menuText}>{t('settings.autoSync')}</Text>
+            <Text className={styles.menuDesc}>{t('settings.autoSyncDesc')}</Text>
           </View>
           <Switch
             checked={settings.autoSync}
@@ -190,14 +212,14 @@ const SettingsPage: React.FC = () => {
 
       {/* 阅读体验 */}
       <View className={styles.section}>
-        <Text className={styles.sectionTitle}>阅读体验</Text>
+        <Text className={styles.sectionTitle}>{t('settings.sectionReading')}</Text>
         <View className={styles.menuItem}>
           <View className={styles.menuIcon}>
             <Text className={styles.menuIconText}>字</Text>
           </View>
           <View className={styles.menuInfo}>
-            <Text className={styles.menuText}>正文字号</Text>
-            <Text className={styles.menuDesc}>影响原文、译文与注释</Text>
+            <Text className={styles.menuText}>{t('settings.fontSize')}</Text>
+            <Text className={styles.menuDesc}>{t('settings.fontSizeDesc')}</Text>
           </View>
           <View className={styles.fontOptions}>
             {FONT_OPTIONS.map(opt => (
@@ -206,7 +228,27 @@ const SettingsPage: React.FC = () => {
                 className={classnames(styles.fontOption, settings.fontSize === opt.value && styles.fontOptionActive)}
                 onClick={() => applySettings({ fontSize: opt.value })}
               >
-                {opt.label}
+                {t(FONT_LABEL_KEYS[opt.value])}
+              </Text>
+            ))}
+          </View>
+        </View>
+        <View className={styles.menuItem}>
+          <View className={styles.menuIcon}>
+            <Text className={styles.menuIconText}>语</Text>
+          </View>
+          <View className={styles.menuInfo}>
+            <Text className={styles.menuText}>{t('settings.language')}</Text>
+            <Text className={styles.menuDesc}>{t('settings.languageDesc')}</Text>
+          </View>
+          <View className={styles.fontOptions}>
+            {LANGUAGE_OPTIONS.map(opt => (
+              <Text
+                key={opt.value}
+                className={classnames(styles.fontOption, settings.language === opt.value && styles.fontOptionActive)}
+                onClick={() => handleLanguageChange(opt.value)}
+              >
+                {opt.value === 'zh' ? t('settings.langZh') : t('settings.langEn')}
               </Text>
             ))}
           </View>
@@ -215,14 +257,14 @@ const SettingsPage: React.FC = () => {
 
       {/* 隐私 */}
       <View className={styles.section}>
-        <Text className={styles.sectionTitle}>隐私</Text>
+        <Text className={styles.sectionTitle}>{t('settings.sectionPrivacy')}</Text>
         <View className={styles.menuItem} onClick={handlePrivacy}>
           <View className={styles.menuIcon}>
             <Text className={styles.menuIconText}>隐</Text>
           </View>
           <View className={styles.menuInfo}>
-            <Text className={styles.menuText}>隐私政策</Text>
-            <Text className={styles.menuDesc}>了解我们如何收集和使用数据</Text>
+            <Text className={styles.menuText}>{t('settings.privacyPolicy')}</Text>
+            <Text className={styles.menuDesc}>{t('settings.privacyDesc')}</Text>
           </View>
           <Text className={styles.menuArrow}>›</Text>
         </View>
@@ -230,14 +272,14 @@ const SettingsPage: React.FC = () => {
 
       {/* 数据管理 */}
       <View className={styles.section}>
-        <Text className={styles.sectionTitle}>数据管理</Text>
+        <Text className={styles.sectionTitle}>{t('settings.sectionData')}</Text>
         <View className={styles.menuItem} onClick={handleClearData}>
           <View className={styles.menuIcon}>
             <Text className={styles.menuIconText}>清</Text>
           </View>
           <View className={styles.menuInfo}>
-            <Text className={styles.menuText}>清空学习数据</Text>
-            <Text className={styles.menuDesc}>已读记录与本地笔记</Text>
+            <Text className={styles.menuText}>{t('settings.clearData')}</Text>
+            <Text className={styles.menuDesc}>{t('settings.clearDataDesc')}</Text>
           </View>
           <Text className={styles.menuArrow}>›</Text>
         </View>
@@ -245,14 +287,14 @@ const SettingsPage: React.FC = () => {
 
       {/* 关于 */}
       <View className={styles.section}>
-        <Text className={styles.sectionTitle}>关于</Text>
+        <Text className={styles.sectionTitle}>{t('settings.sectionAbout')}</Text>
         <View className={styles.menuItem} onClick={handleDataSource}>
           <View className={styles.menuIcon}>
             <Text className={styles.menuIconText}>源</Text>
           </View>
           <View className={styles.menuInfo}>
-            <Text className={styles.menuText}>数据来源</Text>
-            <Text className={styles.menuDesc}>和合文化屋公众号</Text>
+            <Text className={styles.menuText}>{t('settings.dataSource')}</Text>
+            <Text className={styles.menuDesc}>{t('settings.dataSourceDesc')}</Text>
           </View>
           <Text className={styles.menuArrow}>›</Text>
         </View>
@@ -261,8 +303,8 @@ const SettingsPage: React.FC = () => {
             <Text className={styles.menuIconText}>关</Text>
           </View>
           <View className={styles.menuInfo}>
-            <Text className={styles.menuText}>关于论语学习</Text>
-            <Text className={styles.menuDesc}>版本与数据来源</Text>
+            <Text className={styles.menuText}>{t('settings.aboutApp')}</Text>
+            <Text className={styles.menuDesc}>{t('settings.aboutDesc')}</Text>
           </View>
           <Text className={styles.menuArrow}>›</Text>
         </View>
@@ -270,24 +312,24 @@ const SettingsPage: React.FC = () => {
 
       {/* 版本信息 */}
       <View className={styles.versionInfo}>
-        <Text className={styles.versionText}>论语学习 v1.0.0</Text>
-        <Text className={styles.copyright}>© 2026 论语学习团队</Text>
+        <Text className={styles.versionText}>{t('settings.version')}</Text>
+        <Text className={styles.copyright}>{t('settings.copyright')}</Text>
       </View>
 
       {/* 清空确认弹窗 */}
       {showClearConfirm && (
         <View className={styles.modalOverlay} onClick={cancelClear}>
           <View className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <Text className={styles.modalTitle}>确认清空</Text>
+            <Text className={styles.modalTitle}>{t('settings.clearTitle')}</Text>
             <Text className={styles.modalContent}>
-              将清空已读记录与本地笔记，且无法恢复。确定继续吗？
+              {t('settings.clearContent')}
             </Text>
             <View className={styles.modalActions}>
               <View className={styles.modalBtnCancel} onClick={cancelClear}>
-                <Text>取消</Text>
+                <Text>{t('common.cancel')}</Text>
               </View>
               <View className={styles.modalBtnConfirm} onClick={confirmClear}>
-                <Text>确认清空</Text>
+                <Text>{t('settings.clearConfirmBtn')}</Text>
               </View>
             </View>
           </View>

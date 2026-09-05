@@ -1,5 +1,6 @@
 import { getProgress, saveProgress, mergeProgress } from '@/utils/storage';
 import { downloadProgress, uploadProgress } from '@/services/auth';
+import { t } from '@/i18n';
 
 export interface SyncNowResult {
   success: boolean;
@@ -31,6 +32,6 @@ async function doSync(): Promise<SyncNowResult> {
   }
   return {
     success: dlRes.success,
-    message: dlRes.success ? '同步成功' : '云端拉取失败，仅上传本地数据'
+    message: dlRes.success ? t('sync.success') : t('sync.partial')
   };
 }

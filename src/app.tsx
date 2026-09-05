@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Taro from '@tarojs/taro';
 import { CLOUD_ENV } from '@/config/cloud';
 import { silentLoginAndMerge } from '@/services/auth';
+import { I18nProvider } from '@/i18n';
 // 全局样式
 import './app.scss';
 
@@ -54,7 +55,11 @@ function App(props) {
     // 违背「完整数据进分包」的体积设计；首次进分包页面时解压（0.5-2s 低端机可接受）
   }, []);
 
-  return props.children;
+  return (
+    <I18nProvider>
+      {props.children}
+    </I18nProvider>
+  );
 }
 
 export default App;
