@@ -1,0 +1,62 @@
+{
+  "name": "lunyu-desktop",
+  "version": "1.0.0",
+  "description": "论语学习 Windows 桌面版（Electron 壳 + Taro H5）",
+  "main": "main.js",
+  "author": "lunyu",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis portable"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "pdf-parse": "^2.4.5",
+    "pdfkit": "^0.19.1"
+  },
+  "build": {
+    "appId": "com.lunyu.desktop",
+    "productName": "论语学习",
+    "electronDownload": {
+      "mirror": "https://npmmirror.com/mirrors/electron/"
+    },
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js"
+    ],
+    "extraResources": [
+      {
+        "from": "../dist",
+        "to": "dist"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "artifactName": "LunYu-Setup-${version}-${arch}.${ext}",
+      "oneClick": true,
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false
+    },
+    "portable": {
+      "artifactName": "LunYu-Portable-${version}-${arch}.${ext}"
+    }
+  }
+}
