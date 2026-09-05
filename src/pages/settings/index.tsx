@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Switch } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
+import BackHeader from '@/components/BackHeader';
 import { saveProgress, clearPendingSync } from '@/utils/storage';
 import { getSettings, saveSettings, type AppSettings, type FontSize } from '@/utils/settings';
 import { syncProgressNow } from '@/services/sync';
@@ -139,6 +140,8 @@ const SettingsPage: React.FC = () => {
 
   return (
     <ScrollView className={styles.container} scrollY enhanced bounces>
+      {/* H5 端返回栏（页面自带标题，不重复传 title） */}
+      <BackHeader />
       {/* 页面标题 */}
       <View className={styles.header}>
         <Text className={styles.title}>设置</Text>

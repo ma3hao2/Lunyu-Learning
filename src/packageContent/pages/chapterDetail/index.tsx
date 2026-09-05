@@ -4,6 +4,7 @@ import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import VerseCard from '@/components/VerseCard';
 import ProgressBar from '@/components/ProgressBar';
+import BackHeader from '@/components/BackHeader';
 import { chapters } from '@/data/chapters';
 import { loadChapter } from '@/data/versesLoader';
 import type { Verse } from '@/types';
@@ -65,6 +66,7 @@ const ChapterDetailPage: React.FC = () => {
 
   return (
     <ScrollView className={styles.container} scrollY enhanced bounces>
+      <BackHeader title="篇章详情" />
       {/* 篇章头部 */}
       <View className={styles.chapterHeader}>
         <Text className={styles.chapterTitle}>{chapter.title}</Text>

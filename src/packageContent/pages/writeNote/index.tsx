@@ -4,6 +4,7 @@ import type { TextareaProps, BaseEventOrig } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
+import BackHeader from '@/components/BackHeader';
 import { loadVerse, versesIndex } from '@/data/versesLoader';
 import type { Verse } from '@/types';
 import { addNote, updateNote, getNoteById } from '@/utils/storage';
@@ -159,6 +160,7 @@ const WriteNotePage: React.FC = () => {
     <View
       className={classnames(styles.container, fontSize === 'large' && styles.fontLarge, fontSize === 'xl' && styles.fontXl)}
     >
+      <BackHeader title="写笔记" />
       {/* 原文引用 */}
       <View className={styles.quoteCard}>
         <Text className={styles.quoteLabel}>引用原文</Text>

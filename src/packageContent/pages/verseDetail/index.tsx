@@ -4,6 +4,7 @@ import Taro, { useRouter, useDidShow, useShareAppMessage } from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import Skeleton from '@/components/Skeleton';
+import BackHeader from '@/components/BackHeader';
 import { loadVerse, versesIndex } from '@/data/versesLoader';
 import type { Verse, MyNote } from '@/types';
 import { chapters } from '@/data/chapters';
@@ -185,6 +186,7 @@ const VerseDetailPage: React.FC = () => {
         enhanced
         bounces
       >
+        <BackHeader title="章句详情" />
         {/* 注意：loading 态 originalCard 的第一个子节点必须是 View，不能是 Text。
             Taro 4.1.9 存在 bug：带 onClick 的 <Text> 节点被同位置的无 onClick <Text> 复用时，
             移除事件监听会读取不存在的 pure-text 别名导致 TypeError（详见 git 记录）。
@@ -224,6 +226,7 @@ const VerseDetailPage: React.FC = () => {
       enhanced
       bounces
     >
+      <BackHeader title="章句详情" />
       {/* 原文卡片 */}
       <View className={styles.originalCard}>
         {chapter && (

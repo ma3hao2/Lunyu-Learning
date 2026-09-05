@@ -3,6 +3,7 @@ import { View, Text, Input, ScrollView } from '@tarojs/components';
 import type { InputProps, BaseEventOrig } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
+import BackHeader from '@/components/BackHeader';
 import { chapters } from '@/data/chapters';
 import { loadAllVerses } from '@/data/versesLoader';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -100,6 +101,7 @@ const SearchPage: React.FC = () => {
 
   return (
     <ScrollView className={styles.container} scrollY enhanced bounces>
+      <BackHeader title="搜索译文/注释" />
       {/* 搜索栏 */}
       <View className={styles.searchBar}>
         <Text className={styles.searchIcon}>搜</Text>

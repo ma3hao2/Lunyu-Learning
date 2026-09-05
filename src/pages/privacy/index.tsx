@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import styles from './index.module.scss';
+import BackHeader from '@/components/BackHeader';
 
 const PrivacyPage: React.FC = () => {
   // 打开微信官方《小程序隐私保护指引》（需在小程序管理后台配置隐私保护指引后可用）
@@ -15,6 +16,8 @@ const PrivacyPage: React.FC = () => {
 
   return (
     <ScrollView className={styles.container} scrollY enhanced bounces>
+      {/* H5 端返回栏（页面自带标题，不重复传 title） */}
+      <BackHeader />
       <View className={styles.section}>
         <Text className={styles.h2}>隐私政策</Text>
         <Text className={styles.p}>更新日期：2026-08-14</Text>
