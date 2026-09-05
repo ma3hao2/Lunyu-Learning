@@ -10,6 +10,8 @@ import type { MessageKey } from './messages';
 
 // 底部 tab 与 app.config.ts tabBar.list 的顺序一致
 const TAB_KEYS: MessageKey[] = ['tab.home', 'tab.classics', 'tab.notes', 'tab.mine'];
+// tabBar 页路由（weapp 端 setTabBarItem 仅在当前页为 tabBar 页时可调用）
+const TAB_ROUTES = ['pages/home/index', 'pages/classics/index', 'pages/insights/index', 'pages/mine/index'];
 
 interface I18nValue {
   lang: Language;
@@ -52,13 +54,25 @@ export function makeI18nValue(lang: Language, setLang: (lang: Language) => void)
 }
 
 // 原生 tabBar 文案按语言更新（weapp 原生 tab / H5 Taro 自绘 tab 均支持 setTabBarItem）
-// 失败静默（个别端不支持时不影响功能），页面内导航栏标题由各页 useDidShow 自行刷新
+// weapp 端限制：当前页不是 tabBar 页时调用会 fail "not TabBar page"（如设置页里切语言）——
+// 此时跳过，由 tab 页 useDidShow 兜底刷新；页面栈未就绪（启动早期）同样跳过。H5 端无此限制。
 export function applyTabBarLang(lang: Language): void {
+  if (process.env.TARO_ENV === 'weapp') {
+    let current = '';
+    try {
+      const pages = Taro.getCurrentPages ? Taro.getCurrentPages() : [];
+      const top = pages[pages.length - 1] as { route?: string } | undefined;
+      current = (top?.route || '').replace(/^\//, '');
+    } catch (e) {
+      current = '';
+    }
+    if (!TAB_ROUTES.includes(current)) return;
+  }
   TAB_KEYS.forEach((key, index) => {
     try {
       Taro.setTabBarItem({ index, text: translate(lang, key) });
     } catch (e) {
-      // 某些端/时机（如页面栈未就绪）可能失败，忽略即可
+      // 某些端/时机可能失败，忽略即可
     }
   });
 }

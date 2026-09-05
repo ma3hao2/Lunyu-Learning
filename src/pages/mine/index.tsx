@@ -8,7 +8,7 @@ import { getProgress } from '@/utils/storage';
 import { versesIndex } from '@/data/versesIndex';
 import { chapters } from '@/data/chapters';
 import { getUserInfo, silentLoginAndMerge, logout, updateProfile, ensurePrivacyAuthorized } from '@/services/auth';
-import { useI18n } from '@/i18n';
+import { useI18n, applyTabBarLang, getLang } from '@/i18n';
 import type { UserInfo } from '@/types';
 
 const MinePage: React.FC = () => {
@@ -50,8 +50,9 @@ const MinePage: React.FC = () => {
   };
 
   useDidShow(() => {
-    // 导航栏标题随语言刷新（tab 页标题走原生导航栏）
+    // 导航栏标题随语言刷新（tab 页标题走原生导航栏）；tabBar 文案兜底刷新
     Taro.setNavigationBarTitle({ title: t('tab.mine') });
+    applyTabBarLang(getLang());
     setProgress(getProgress());
     const u = getUserInfo();
     setUser(u);

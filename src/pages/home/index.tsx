@@ -10,7 +10,7 @@ import { chapters } from '@/data/chapters';
 import { getTodayRecommend } from '@/data/dailyRecommend';
 import { getProgress } from '@/utils/storage';
 import { loadAllVersesEn } from '@/data/versesEnLoader';
-import { useI18n } from '@/i18n';
+import { useI18n, applyTabBarLang, getLang } from '@/i18n';
 import type { Language, VerseEn } from '@/types';
 
 const HomePage: React.FC = () => {
@@ -57,8 +57,9 @@ const HomePage: React.FC = () => {
   };
 
   useDidShow(() => {
-    // 导航栏标题随语言刷新（tab 页标题走原生导航栏）
+    // 导航栏标题随语言刷新（tab 页标题走原生导航栏）；tabBar 文案兜底刷新（非 tab 页切语言时被跳过）
     Taro.setNavigationBarTitle({ title: t('app.brand') });
+    applyTabBarLang(getLang());
     refreshProgress();
     // 每次进入首页轮换经典名句
     setClassicVerses(pickRandomVerses());

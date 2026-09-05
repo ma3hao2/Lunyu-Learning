@@ -15,7 +15,7 @@ import {
   type SearchResult
 } from '@/services/search';
 import { renderHighlighted } from '@/utils/highlight';
-import { useI18n } from '@/i18n';
+import { useI18n, applyTabBarLang, getLang } from '@/i18n';
 
 const PAGE_SIZE = 20; // 下滑加载每页条数
 
@@ -37,8 +37,9 @@ const ClassicsPage: React.FC = () => {
   const debouncedSearchText = useDebounce(searchText, 300);
 
   useDidShow(() => {
-    // 导航栏标题随语言刷新（tab 页标题走原生导航栏）
+    // 导航栏标题随语言刷新（tab 页标题走原生导航栏）；tabBar 文案兜底刷新
     Taro.setNavigationBarTitle({ title: t('tab.classics') });
+    applyTabBarLang(getLang());
     const progress = getProgress();
     setReadVerseIds(progress.readVerseIds);
   });

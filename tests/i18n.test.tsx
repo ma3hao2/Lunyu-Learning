@@ -118,6 +118,28 @@ describe('applyTabBarLang（tabBar 文案联动）', () => {
     expect(Taro.setTabBarItem).toHaveBeenNthCalledWith(2, { index: 1, text: '论语' });
   });
 
+  test('weapp 端守卫：非 tabBar 页跳过调用，tabBar 页正常调用', () => {
+    const prevEnv = process.env.TARO_ENV;
+    (process.env as any).TARO_ENV = 'weapp';
+    try {
+      (Taro.setTabBarItem as jest.Mock).mockClear();
+      // 当前页为设置页（非 tab 页）：不调用，避免 "not TabBar page" 报错
+      (Taro.getCurrentPages as jest.Mock).mockReturnValueOnce([{ route: 'pages/settings/index' }]);
+      applyTabBarLang('en');
+      expect(Taro.setTabBarItem).not.toHaveBeenCalled();
+      // 当前页为首页（tab 页）：正常刷新 4 项
+      (Taro.getCurrentPages as jest.Mock).mockReturnValueOnce([{ route: 'pages/home/index' }]);
+      applyTabBarLang('en');
+      expect(Taro.setTabBarItem).toHaveBeenCalledTimes(4);
+      // 页面栈未就绪（启动早期）：跳过
+      (Taro.getCurrentPages as jest.Mock).mockReturnValueOnce([]);
+      applyTabBarLang('en');
+      expect(Taro.setTabBarItem).toHaveBeenCalledTimes(4);
+    } finally {
+      (process.env as any).TARO_ENV = prevEnv;
+    }
+  });
+
   test('setTabBarItem 抛错时不影响后续 tab', () => {
     (Taro.setTabBarItem as jest.Mock).mockClear();
     (Taro.setTabBarItem as jest.Mock).mockImplementationOnce(() => { throw new Error('not ready'); });

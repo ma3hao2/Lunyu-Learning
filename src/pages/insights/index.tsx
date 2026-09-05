@@ -4,7 +4,7 @@ import Taro, { useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
 import { getProgress, deleteNote } from '@/utils/storage';
 import { versesIndex } from '@/data/versesIndex';
-import { useI18n } from '@/i18n';
+import { useI18n, applyTabBarLang, getLang } from '@/i18n';
 import type { MyNote } from '@/types';
 
 // 我的笔记（本地笔记列表，去 UGC 后承载原「心得」tab）
@@ -13,8 +13,9 @@ const InsightsPage: React.FC = () => {
   const [myNotes, setMyNotes] = useState<MyNote[]>(() => getProgress().myNotes);
 
   useDidShow(() => {
-    // 导航栏标题随语言刷新
+    // 导航栏标题随语言刷新；tabBar 文案兜底刷新（非 tab 页切语言时被跳过）
     Taro.setNavigationBarTitle({ title: t('notes.title') });
+    applyTabBarLang(getLang());
     // 每次进入刷新（写笔记/编辑后返回时同步最新列表）
     setMyNotes(getProgress().myNotes);
   });
