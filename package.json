@@ -1,6 +1,6 @@
 {
   "name": "lunyu-miniapp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "论语学习小程序（Taro 4 + React + TypeScript + 微信云开发）",
   "templateInfo": {

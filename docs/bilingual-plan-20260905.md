@@ -1,5 +1,6 @@
 # 三端中英双语改造计划（小程序 / Windows / APK）
 
+> **状态：已执行完成（2026-09-05）。** 数据层/i18n/主包与分包页面/三端产物均已落地，256 项测试全绿，H5 端语言切换经浏览器实测通过；weapp 需人工经开发者工具上传提审。
 > 提出：Zcode（2026-09-05）
 > 背景：lunyu-web 已完成中英双语改造（2026-09 增量，见 lunyu-web/DESIGN.md 第〇节），界面语言与章句数据均可切换。本计划将同样的双语能力移植到 lunyu-miniapp 代码库，使其三端产物——微信小程序（weapp）、Windows 桌面版（Electron）、安卓 APK（Capacitor）——全部支持中英切换。
 > 核心洞察：**三端共用同一套 lunyu-miniapp 源码**。Windows 版 = Electron 壳托管 `taro build --type h5` 产物；APK = Capacitor 壳托管同一 H5 产物；小程序 = weapp 构建。**代码改造只做一次，三端各自重建产物即可**。
