@@ -22,8 +22,8 @@ describe('deepSearch（深度搜索双语）', () => {
   test('英文模式：命中英文字段，预览为英文文本', async () => {
     const en = await loadVerseEn(101);
     expect(en).not.toBeNull();
-    // 英文数据保证非空（blob 完整性测试）；搜索范围是译文/注释，关键词从译文取
-    const kw = (en!.translation.match(/[A-Za-z]{5,}/g) || ['learn'])[0].toLowerCase();
+    // 英文数据保证非空（blob 完整性测试）；搜索范围是译文/注释，关键词从译文取（includes 区分大小写，保留原样）
+    const kw = (en!.translation.match(/[A-Za-z]{5,}/g) || ['learn'])[0];
     expect(kw.length).toBeGreaterThan(0);
     const res = await searchDeep(kw, 'en');
     expect(res.length).toBeGreaterThan(0);
