@@ -6,11 +6,13 @@ import styles from './index.module.scss';
 import Skeleton from '@/components/Skeleton';
 import BackHeader from '@/components/BackHeader';
 import { loadVerse, versesIndex } from '@/data/versesLoader';
-import type { Verse, MyNote } from '@/types';
+import { loadVerseEn } from '@/data/versesEnLoader';
+import type { Verse, VerseEn, MyNote } from '@/types';
 import { chapters } from '@/data/chapters';
 import { useProgress } from '@/hooks/useProgress';
 import { getProgress, deleteNote } from '@/utils/storage';
 import { getSettings, saveSettings, type FontSize } from '@/utils/settings';
+import { useI18n } from '@/i18n';
 
 // 将文本中的换行符（支持 \n 字面量和真实换行）拆分为行数组渲染
 function renderLines(text: string) {
@@ -26,13 +28,14 @@ function renderLines(text: string) {
 const VerseDetailPage: React.FC = () => {
   const router = useRouter();
   const [verseId, setVerseId] = useState(() => Number(router.params.id || '101'));
+  const { t, chapterTitle: chapterTitleOf, verseText: getVerseText } = useI18n();
   const { isRead, markRead } = useProgress();
 
   // 分享：转发当前章句，标题用原文截取，path 带 verseId 供他人打开
   useShareAppMessage(() => {
     const title = verse
       ? verse.original.slice(0, 24) + (verse.original.length > 24 ? '…' : '')
-      : '论语学习';
+      : t('app.brand');
     return {
       title,
       path: `/packageContent/pages/verseDetail/index?id=${verseId}`
@@ -40,6 +43,7 @@ const VerseDetailPage: React.FC = () => {
   });
 
   const [verse, setVerse] = useState<Verse | null>(null);
+  const [verseEn, setVerseEn] = useState<VerseEn | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
   const [retryTick, setRetryTick] = useState(0); // 重试计数，变化时重新触发加载
@@ -58,6 +62,10 @@ const VerseDetailPage: React.FC = () => {
     (async () => {
       try {
         let v = await loadVerse(verseId);
+        // 英文模式并行取英文数据（缺失/中文模式为 null，展示层回退中文）
+        loadVerseEn(verseId)
+          .then(en => { if (!cancelled) setVerseEn(en); })
+          .catch(() => { if (!cancelled) setVerseEn(null); });
         if (!v && versesIndex.length > 0) {
           v = await loadVerse(versesIndex[0].id);
           // 同步修正 verseId：否则 verseIdx=-1，「上一句/下一句」按钮全部禁用（B3）
@@ -67,6 +75,7 @@ const VerseDetailPage: React.FC = () => {
         }
         if (!cancelled) {
           setVerse(v);
+          setVerseEn(null); // 新句先清空英文数据，避免展示上一位句的英文（加载完成后回填）
           setLoading(false);
           // 章句加载完成后也刷新一次笔记
           refreshNotes();
@@ -92,7 +101,12 @@ const VerseDetailPage: React.FC = () => {
     return chapters.find(c => c.id === verse.chapterId);
   }, [verse]);
 
+  // 当前语言的展示文本：英文模式取英文数据（缺失逐字段回退中文），原文共用不重存
+  const verseText = verse ? getVerseText(verse, verseEn) : { translation: '', commentary: '', keyPoint: '' };
+
   useDidShow(() => {
+    // 导航栏标题随语言刷新
+    Taro.setNavigationBarTitle({ title: t('verse.title') });
     refreshNotes();
     setFontSize(getSettings().fontSize);
   });
@@ -104,11 +118,11 @@ const VerseDetailPage: React.FC = () => {
     // 激励文案（P2-3）：已读后带连续学习天数
     const days = getProgress().totalReadDays;
     Taro.showToast({
-      title: wasRead ? '已读过啦' : (days > 1 ? `已标记为已读 · 连续${days}天` : '已标记为已读'),
+      title: wasRead ? t('verse.alreadyRead') : (days > 1 ? t('verse.markedReadStreak', { n: days }) : t('verse.markedRead')),
       icon: 'success',
       duration: 1500
     });
-  }, [verseId, isRead, markRead]);
+  }, [verseId, isRead, markRead, t]);
 
   // 字号调节：A- 降一档 / A+ 升一档（循环），保存到设置（阅读中随手调，符合阅读习惯）
   const FONT_SIZES: FontSize[] = ['normal', 'large', 'xl'];
@@ -161,22 +175,22 @@ const VerseDetailPage: React.FC = () => {
   // 删除笔记
   const handleDeleteNote = useCallback((note: MyNote) => {
     Taro.showModal({
-      title: '删除笔记',
-      content: '确定要删除这条笔记吗？删除后不可恢复。',
+      title: t('verse.deleteNoteTitle'),
+      content: t('verse.deleteNoteContent'),
       confirmColor: '#B8612D',
       success: (res) => {
         if (res.confirm) {
           try {
             deleteNote(note.id);
-            Taro.showToast({ title: '已删除', icon: 'success' });
+            Taro.showToast({ title: t('common.deleted'), icon: 'success' });
             refreshNotes();
           } catch (e: any) {
-            Taro.showToast({ title: e?.message || '删除失败', icon: 'none' });
+            Taro.showToast({ title: e?.message || t('common.deleteFailed'), icon: 'none' });
           }
         }
       }
     });
-  }, [refreshNotes]);
+  }, [refreshNotes, t]);
 
   if (loading || !verse) {
     return (
@@ -186,7 +200,7 @@ const VerseDetailPage: React.FC = () => {
         enhanced
         bounces
       >
-        <BackHeader title="章句详情" />
+        <BackHeader title={t('verse.title')} />
         {/* 注意：loading 态 originalCard 的第一个子节点必须是 View，不能是 Text。
             Taro 4.1.9 存在 bug：带 onClick 的 <Text> 节点被同位置的无 onClick <Text> 复用时，
             移除事件监听会读取不存在的 pure-text 别名导致 TypeError（详见 git 记录）。
@@ -194,7 +208,7 @@ const VerseDetailPage: React.FC = () => {
         <View className={styles.originalCard}>
           {loadFailed ? (
             <View className={styles.loadFailedWrap}>
-              <Text className={styles.originalText}>加载失败，请检查网络</Text>
+              <Text className={styles.originalText}>{t('common.loadFailedNetwork')}</Text>
               <View
                 className={styles.actionBtnSecondary}
                 style={{ marginTop: 24 }}
@@ -203,7 +217,7 @@ const VerseDetailPage: React.FC = () => {
                   setRetryTick(t => t + 1);
                 }}
               >
-                <Text>重试</Text>
+                <Text>{t('common.retry')}</Text>
               </View>
             </View>
           ) : (
@@ -226,34 +240,34 @@ const VerseDetailPage: React.FC = () => {
       enhanced
       bounces
     >
-      <BackHeader title="章句详情" />
+      <BackHeader title={t('verse.title')} />
       {/* 原文卡片 */}
       <View className={styles.originalCard}>
         {chapter && (
           <Text className={styles.chapterTag} onClick={goChapter}>
-            {chapter.title} · {verse.chapterId}-{verse.order} ›
+            {chapterTitleOf(chapter.id, chapter.title)} · {verse.chapterId}-{verse.order} ›
           </Text>
         )}
         <Text className={styles.originalText} selectable>{verse.original}</Text>
-        <Text className={styles.keyPointText} selectable>核心要点：{verse.keyPoint}</Text>
+        <Text className={styles.keyPointText} selectable>{t('verse.keyPoint', { text: verseText.keyPoint })}</Text>
       </View>
 
       {/* 译文 */}
       <View className={styles.sectionCard}>
         <View className={styles.sectionTitle}>
           <View className={styles.sectionTitleIcon} />
-          <Text className={styles.sectionTitleText}>白话译文</Text>
+          <Text className={styles.sectionTitleText}>{t('verse.translation')}</Text>
         </View>
-        <View className={styles.sectionContent}>{renderLines(verse.translation)}</View>
+        <View className={styles.sectionContent}>{renderLines(verseText.translation)}</View>
       </View>
 
       {/* 注释解读 */}
       <View className={styles.sectionCard}>
         <View className={styles.sectionTitle}>
           <View className={styles.sectionTitleIcon} />
-          <Text className={styles.sectionTitleText}>注释解读</Text>
+          <Text className={styles.sectionTitleText}>{t('verse.commentary')}</Text>
         </View>
-        <View className={styles.sectionContent}>{renderLines(verse.commentary)}</View>
+        <View className={styles.sectionContent}>{renderLines(verseText.commentary)}</View>
       </View>
 
       {/* 操作栏 */}
@@ -262,13 +276,13 @@ const VerseDetailPage: React.FC = () => {
           className={classnames(styles.actionBtn, styles.actionBtnRead, isRead(verseId) && styles.read)}
           onClick={handleMarkRead}
         >
-          <Text>{isRead(verseId) ? '已读 ✓' : '标记已读'}</Text>
+          <Text>{isRead(verseId) ? t('verse.readDone') : t('verse.markRead')}</Text>
         </View>
         <View
           className={classnames(styles.actionBtn, styles.actionBtnSecondary)}
           onClick={handleWriteNote}
         >
-          <Text>写笔记</Text>
+          <Text>{t('verse.writeNote')}</Text>
         </View>
         <View className={styles.fontSizeGroup}>
           <View
@@ -292,26 +306,26 @@ const VerseDetailPage: React.FC = () => {
           className={classnames(styles.navBtn, prevVerseId === null && styles.navBtnDisabled)}
           onClick={goPrevVerse}
         >
-          <Text>‹ 上一句</Text>
+          <Text>{t('verse.prev')}</Text>
         </View>
         <View
           className={classnames(styles.navBtn, nextVerseId === null && styles.navBtnDisabled)}
           onClick={goNextVerse}
         >
-          <Text>下一句 ›</Text>
+          <Text>{t('verse.next')}</Text>
         </View>
       </View>
 
       {/* 内容来源 */}
       <View className={styles.sourceBar}>
-        <Text className={styles.sourceText}>内容来源：和合文化屋公众号</Text>
+        <Text className={styles.sourceText}>{t('verse.source')}</Text>
       </View>
 
       {/* 我的笔记 */}
       <View className={styles.insightSection}>
         <View className={styles.insightSectionTitle}>
-          <Text className={styles.insightSectionText}>我的笔记</Text>
-          <Text className={styles.insightSectionCount}>共{myNotes.length}条</Text>
+          <Text className={styles.insightSectionText}>{t('verse.notesTitle')}</Text>
+          <Text className={styles.insightSectionCount}>{t('verse.notesCount', { n: myNotes.length })}</Text>
         </View>
         {myNotes.length > 0 ? (
           myNotes.map(note => (
@@ -327,15 +341,15 @@ const VerseDetailPage: React.FC = () => {
               <View className={styles.myNoteFooter}>
                 <Text className={styles.myNoteTime}>{note.createTime}</Text>
                 <View className={styles.myNoteActions}>
-                  <Text className={styles.myNoteAction} onClick={() => handleEditNote(note)}>编辑</Text>
-                  <Text className={styles.myNoteActionDelete} onClick={() => handleDeleteNote(note)}>删除</Text>
+                  <Text className={styles.myNoteAction} onClick={() => handleEditNote(note)}>{t('common.edit')}</Text>
+                  <Text className={styles.myNoteActionDelete} onClick={() => handleDeleteNote(note)}>{t('common.delete')}</Text>
                 </View>
               </View>
             </View>
           ))
         ) : (
           <View className={styles.emptyTip}>
-            <Text>还没有笔记，点击上方"写笔记"记录你的感悟</Text>
+            <Text>{t('verse.noteEmpty')}</Text>
           </View>
         )}
       </View>

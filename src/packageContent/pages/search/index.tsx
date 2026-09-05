@@ -10,11 +10,13 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { searchDeep, getFieldLabel, type SearchResult } from '@/packageContent/services/deepSearch';
 import { renderHighlighted } from '@/utils/highlight';
 import { getSearchHistory, addSearchHistory, clearSearchHistory } from '@/utils/searchHistory';
+import { useI18n } from '@/i18n';
 
 const PAGE_SIZE = 20; // 每页显示条数
 
 const SearchPage: React.FC = () => {
   const router = useRouter();
+  const { t, lang } = useI18n();
   // 框架已在 onLoad 解码过 query 参数，直接使用；二次解码会让含 % 的关键词（如 50%）抛 URIError 白屏
   const initialKeyword = router.params.keyword || '';
 
@@ -51,7 +53,7 @@ const SearchPage: React.FC = () => {
         if (!cancelled) {
           setLoading(false);
           setLoadFailed(true);
-          Taro.showToast({ title: '加载失败，请重试', icon: 'none' });
+          Taro.showToast({ title: t('common.loadFailed'), icon: 'none' });
         }
       }
     })();
@@ -71,14 +73,14 @@ const SearchPage: React.FC = () => {
     let cancelled = false;
     const seq = ++searchSeqRef.current;
     (async () => {
-      const res = await searchDeep(kw);
+      const res = await searchDeep(kw, lang);
       // cancelled 防止卸载/依赖变更后 setState；seq 防止旧请求后返回覆盖新结果
       if (cancelled || seq !== searchSeqRef.current) return;
       setResults(res);
       setDisplayCount(PAGE_SIZE); // 新搜索重置分页
     })();
     return () => { cancelled = true; };
-  }, [debouncedSearchText, dataReady]);
+  }, [debouncedSearchText, dataReady, lang]);
 
   const handleSearchInput = useCallback((e: BaseEventOrig<InputProps.inputEventDetail>) => {
     setSearchText(e.detail.value);
@@ -101,13 +103,13 @@ const SearchPage: React.FC = () => {
 
   return (
     <ScrollView className={styles.container} scrollY enhanced bounces>
-      <BackHeader title="搜索译文/注释" />
+      <BackHeader title={t('search.title')} />
       {/* 搜索栏 */}
       <View className={styles.searchBar}>
         <Text className={styles.searchIcon}>搜</Text>
         <Input
           className={styles.searchInput}
-          placeholder="搜索译文、注释..."
+          placeholder={t('search.placeholder')}
           value={searchText}
           onInput={handleSearchInput}
           confirmType="search"
@@ -122,8 +124,8 @@ const SearchPage: React.FC = () => {
       {!loading && !loadFailed && !isSearching && history.length > 0 && (
         <View className={styles.historySection}>
           <View className={styles.historyHeader}>
-            <Text className={styles.historyTitle}>搜索历史</Text>
-            <Text className={styles.historyClear} onClick={() => { clearSearchHistory(); setHistory([]); }}>清空</Text>
+            <Text className={styles.historyTitle}>{t('search.history')}</Text>
+            <Text className={styles.historyClear} onClick={() => { clearSearchHistory(); setHistory([]); }}>{t('common.clear')}</Text>
           </View>
           <View className={styles.historyChips}>
             {history.map(kw => (
@@ -138,15 +140,15 @@ const SearchPage: React.FC = () => {
       {/* 状态提示 */}
       {loadFailed ? (
         <View className={styles.tipWrap}>
-          <Text className={styles.tip}>章节数据加载失败，请检查网络</Text>
-          <Text className={styles.retryBtn} onClick={() => setRetryTick(t => t + 1)}>重试</Text>
+          <Text className={styles.tip}>{t('common.loadFailedNetwork')}</Text>
+          <Text className={styles.retryBtn} onClick={() => setRetryTick(t => t + 1)}>{t('common.retry')}</Text>
         </View>
       ) : loading ? (
-        <Text className={styles.tip}>正在加载章节数据...</Text>
+        <Text className={styles.tip}>{t('search.loadHint')}</Text>
       ) : isSearching ? (
-        <Text className={styles.tip}>找到 {results.length} 条匹配</Text>
+        <Text className={styles.tip}>{t('search.found', { n: results.length })}</Text>
       ) : (
-        <Text className={styles.tip}>输入关键词，搜索《论语》的译文与注释</Text>
+        <Text className={styles.tip}>{t('search.hint')}</Text>
       )}
 
       {/* 搜索结果 */}
@@ -164,7 +166,7 @@ const SearchPage: React.FC = () => {
                   <Text className={styles.resultChapter}>{chapter?.title} · {result.chapterId}-{result.order}</Text>
                   <View className={styles.matchBadges}>
                     {result.matchFields.map(f => (
-                      <Text key={f} className={styles.matchBadge}>{getFieldLabel(f)}</Text>
+                      <Text key={f} className={styles.matchBadge}>{getFieldLabel(f, lang)}</Text>
                     ))}
                   </View>
                 </View>
@@ -183,15 +185,15 @@ const SearchPage: React.FC = () => {
               onClick={results.length > displayCount ? handleShowAll : undefined}
             >
               {results.length > displayCount
-                ? `点击显示全部（共 ${results.length} 条，已显示 ${displayCount} 条）`
-                : `已全部加载，共 ${results.length} 条`}
+                ? t('common.showAllMore', { total: results.length, shown: displayCount })
+                : t('common.showAllDone', { total: results.length })}
             </View>
           )}
         </View>
       )}
 
       {!loading && isSearching && results.length === 0 && (
-        <Text className={styles.emptyTip}>未找到匹配内容，试试其他关键词</Text>
+        <Text className={styles.emptyTip}>{t('classics.empty')}</Text>
       )}
     </ScrollView>
   );

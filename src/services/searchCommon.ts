@@ -2,8 +2,10 @@
 // 主包 search.ts 与分包 deepSearch.ts 共同引用，避免重复定义
 // 本模块不依赖任何章节数据，可安全被主包/分包引用
 
-import type { Verse } from '@/types';
+import type { Language, Verse } from '@/types';
 import type { VerseIndex } from '@/data/versesIndex';
+import { translate } from '@/i18n/messages';
+import type { MessageKey } from '@/i18n/messages';
 
 // 匹配字段类型
 export type MatchField = 'original' | 'translation' | 'commentary';
@@ -25,14 +27,15 @@ export const PREVIEW_LEN = 50; // 上下文预览长度（字符）
 // 字段优先级：原文 > 译文 > 注释
 export const FIELD_PRIORITY: MatchField[] = ['original', 'translation', 'commentary'];
 
-const FIELD_LABELS: Record<MatchField, string> = {
-  original: '原文',
-  translation: '译文',
-  commentary: '注释',
+// 字段标签走 i18n 字典（messages 为纯 TS 模块，不引入 React/Taro 依赖）
+const FIELD_LABEL_KEYS: Record<MatchField, MessageKey> = {
+  original: 'common.fieldOriginal',
+  translation: 'common.fieldTranslation',
+  commentary: 'common.fieldCommentary',
 };
 
-export function getFieldLabel(field: MatchField): string {
-  return FIELD_LABELS[field];
+export function getFieldLabel(field: MatchField, lang: Language = 'zh'): string {
+  return translate(lang, FIELD_LABEL_KEYS[field]);
 }
 
 // 获取指定字段的文本（VerseIndex 仅有 original，Verse 含全部字段）

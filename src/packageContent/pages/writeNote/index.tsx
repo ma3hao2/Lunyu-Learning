@@ -9,9 +9,11 @@ import { loadVerse, versesIndex } from '@/data/versesLoader';
 import type { Verse } from '@/types';
 import { addNote, updateNote, getNoteById } from '@/utils/storage';
 import { getSettings, type FontSize } from '@/utils/settings';
+import { useI18n } from '@/i18n';
 
 const WriteNotePage: React.FC = () => {
   const router = useRouter();
+  const { t } = useI18n();
   // verseId 归一化：非法参数（如 abc）会得 NaN，导致笔记归属错乱，统一回退到第一篇（101）
   const [verseId, setVerseId] = useState(() => {
     const id = Number(router.params.verseId || '101');
@@ -63,7 +65,7 @@ const WriteNotePage: React.FC = () => {
         if (!cancelled) {
           setLoading(false);
           Taro.showToast({
-            title: '加载失败，请重试',
+            title: t('common.loadFailed'),
             icon: 'none',
             duration: 2000
           });
@@ -73,8 +75,8 @@ const WriteNotePage: React.FC = () => {
     return () => { cancelled = true; };
   }, [verseId, noteId, isEditing]);
 
-  // 常用标签快捷选择（点击即选/取消），用户也可通过输入框添加自定义标签
-  const presetTags = ['修身', '学习', '处世', '教育', '管理'];
+  // 常用标签快捷选择（点击即选/取消），用户也可通过输入框添加自定义标签（标签随界面语言展示）
+  const presetTags = [t('note.tagSelfCultivation'), t('note.tagLearning'), t('note.tagConduct'), t('note.tagEducation'), t('note.tagManagement')];
   const [tagInput, setTagInput] = useState('');
 
   const handleContentInput = (e: BaseEventOrig<TextareaProps.onInputEventDetail>) => {
@@ -97,7 +99,7 @@ const WriteNotePage: React.FC = () => {
     const tag = tagInput.trim();
     if (!tag) return;
     if (tag.length > 8) {
-      Taro.showToast({ title: '标签最多8个字', icon: 'none' });
+      Taro.showToast({ title: t('note.tagMaxLen'), icon: 'none' });
       return;
     }
     if (selectedTags.includes(tag)) {
@@ -105,7 +107,7 @@ const WriteNotePage: React.FC = () => {
       return;
     }
     if (selectedTags.length >= 5) {
-      Taro.showToast({ title: '最多添加5个标签', icon: 'none' });
+      Taro.showToast({ title: t('note.tagMaxCount'), icon: 'none' });
       return;
     }
     setSelectedTags(prev => [...prev, tag]);
@@ -116,7 +118,7 @@ const WriteNotePage: React.FC = () => {
     // 从 ref 取最新内容，避免 state 未刷新
     const text = contentRef.current.trim();
     if (!text) {
-      Taro.showToast({ title: '请输入笔记内容', icon: 'none' });
+      Taro.showToast({ title: t('note.emptyContent'), icon: 'none' });
       return;
     }
     if (submitting) return;
@@ -132,7 +134,7 @@ const WriteNotePage: React.FC = () => {
     } catch (e: any) {
       console.error('[WriteNote] 本地保存失败:', e);
       Taro.showToast({
-        title: e?.message || '保存失败，请重试',
+        title: e?.message || t('note.saveFailed'),
         icon: 'none',
         duration: 2000
       });
@@ -141,7 +143,7 @@ const WriteNotePage: React.FC = () => {
     }
 
     Taro.showToast({
-      title: isEditing ? '更新成功' : '保存成功',
+      title: isEditing ? t('note.updated') : t('note.saved'),
       icon: 'success'
     });
 
@@ -157,12 +159,12 @@ const WriteNotePage: React.FC = () => {
     <View
       className={classnames(styles.container, fontSize === 'large' && styles.fontLarge, fontSize === 'xl' && styles.fontXl)}
     >
-      <BackHeader title="写笔记" />
+      <BackHeader title={t('note.title')} />
       {/* 原文引用 */}
       <View className={styles.quoteCard}>
-        <Text className={styles.quoteLabel}>引用原文</Text>
+        <Text className={styles.quoteLabel}>{t('note.quoteLabel')}</Text>
         {loading || !verse ? (
-          <Text className={styles.quoteText}>加载中...</Text>
+          <Text className={styles.quoteText}>{t('app.loading')}</Text>
         ) : (
           <Text className={styles.quoteText}>{verse.original}</Text>
         )}
@@ -170,10 +172,10 @@ const WriteNotePage: React.FC = () => {
 
       {/* 编辑区 */}
       <View className={styles.editorCard}>
-        <Text className={styles.editorTitle}>{isEditing ? '编辑笔记' : '我的笔记'}</Text>
+        <Text className={styles.editorTitle}>{isEditing ? t('note.editTitle') : t('note.editorTitle')}</Text>
         <Textarea
           className={styles.textarea}
-          placeholder="写下你对这段论语的学习感悟..."
+          placeholder={t('note.placeholder')}
           value={content}
           onInput={handleContentInput}
           maxlength={500}
@@ -184,7 +186,7 @@ const WriteNotePage: React.FC = () => {
 
       {/* 标签选择 */}
       <View className={styles.tagSection}>
-        <Text className={styles.tagLabel}>添加标签（最多5个）</Text>
+        <Text className={styles.tagLabel}>{t('note.tagLabel')}</Text>
         {/* 已选标签（可点击删除） */}
         {selectedTags.length > 0 && (
           <View className={styles.tagRow}>
@@ -215,21 +217,21 @@ const WriteNotePage: React.FC = () => {
         <View className={styles.tagInputRow}>
           <Input
             className={styles.tagInput}
-            placeholder="自定义标签..."
+            placeholder={t('note.tagCustomPlaceholder')}
             value={tagInput}
             maxlength={8}
             onInput={(e) => setTagInput(e.detail.value)}
             onConfirm={handleAddTag}
             confirmType="done"
           />
-          <Text className={styles.tagAddBtn} onClick={handleAddTag}>添加</Text>
+          <Text className={styles.tagAddBtn} onClick={handleAddTag}>{t('note.tagAdd')}</Text>
         </View>
       </View>
 
       {/* 提交按钮 */}
       <View className={styles.submitBtn} onClick={handleSubmit}>
         <Text className={styles.submitBtnText}>
-          {submitting ? '保存中...' : isEditing ? '更新笔记' : '保存笔记'}
+          {submitting ? t('common.saving') : isEditing ? t('note.updateBtn') : t('note.saveBtn')}
         </Text>
       </View>
     </View>

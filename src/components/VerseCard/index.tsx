@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text } from '@tarojs/components';
 import classnames from 'classnames';
 import { Verse } from '@/types';
+import { useI18n } from '@/i18n';
 import styles from './index.module.scss';
 
 interface VerseCardProps {
@@ -12,6 +13,7 @@ interface VerseCardProps {
 }
 
 const VerseCard: React.FC<VerseCardProps> = ({ verse, isRead = false, hasNote = false, onClick }) => {
+  const { t } = useI18n();
   return (
     <View
       className={classnames(styles.card, isRead && styles.read)}
@@ -20,14 +22,14 @@ const VerseCard: React.FC<VerseCardProps> = ({ verse, isRead = false, hasNote = 
       <View className={styles.header}>
         <Text className={styles.order}>{verse.chapterId}-{verse.order}</Text>
         <View className={styles.badges}>
-          {hasNote && <Text className={styles.noteBadge}>笔记</Text>}
-          {isRead && <Text className={styles.badge}>已读</Text>}
+          {hasNote && <Text className={styles.noteBadge}>{t('verse.badgeNote')}</Text>}
+          {isRead && <Text className={styles.badge}>{t('verse.badgeRead')}</Text>}
         </View>
       </View>
       <Text className={styles.original}>{verse.original}</Text>
       <Text className={styles.keyPoint}>{verse.keyPoint}</Text>
       <View className={styles.footer}>
-        <Text className={styles.arrow}>查看详情 ›</Text>
+        <Text className={styles.arrow}>{t('verse.viewDetail')}</Text>
       </View>
     </View>
   );

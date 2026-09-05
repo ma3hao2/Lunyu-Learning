@@ -82,11 +82,17 @@ export const messages = {
   'chapter.progress': { zh: '本篇进度', en: 'Book Progress' },
   'chapter.verseList': { zh: '章句列表', en: 'Verses' },
   'chapter.countVerses': { zh: '共{n}章', en: '{n} verses' },
+  'chapter.verseCount': { zh: '{n}章', en: '{n} verses' },
+  'chapter.readAll': { zh: '已读完', en: 'Completed' },
+  'chapter.readProgress': { zh: '已读{n}/{m}', en: '{n}/{m} read' },
   'chapter.loadingList': { zh: '加载中...', en: 'Loading...' },
   'chapter.compiling': { zh: '本篇内容正在整理中...', en: 'Content for this book is being prepared...' },
 
   // 章句详情页
   'verse.title': { zh: '章句详情', en: 'Verse Details' },
+  'verse.badgeNote': { zh: '笔记', en: 'Note' },
+  'verse.badgeRead': { zh: '已读', en: 'Read' },
+  'verse.viewDetail': { zh: '查看详情 ›', en: 'Details ›' },
   'verse.keyPoint': { zh: '核心要点：{text}', en: 'Key points: {text}' },
   'verse.translation': { zh: '白话译文', en: 'Translation' },
   'verse.commentary': { zh: '注释解读', en: 'Word Notes & Interpretation' },

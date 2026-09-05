@@ -7,11 +7,14 @@ import ProgressBar from '@/components/ProgressBar';
 import BackHeader from '@/components/BackHeader';
 import { chapters } from '@/data/chapters';
 import { loadChapter } from '@/data/versesLoader';
+import { loadChapterEn } from '@/data/versesEnLoader';
 import type { Verse } from '@/types';
 import { getProgress } from '@/utils/storage';
+import { useI18n } from '@/i18n';
 
 const ChapterDetailPage: React.FC = () => {
   const router = useRouter();
+  const { t, theme, chapterTitle, chapterDescription, lang } = useI18n();
   const rawChapterId = Number(router.params.id || '1');
   // 无效 id 回退到第 1 篇，保证头部与列表一致
   const chapterId = chapters.some(c => c.id === rawChapterId) ? rawChapterId : 1;
@@ -19,6 +22,8 @@ const ChapterDetailPage: React.FC = () => {
   const [noteVerseIds, setNoteVerseIds] = useState<number[]>([]);
 
   useDidShow(() => {
+    // 导航栏标题随语言刷新
+    Taro.setNavigationBarTitle({ title: t('chapter.title') });
     const progress = getProgress();
     setReadVerseIds(progress.readVerseIds);
     setNoteVerseIds(progress.myNotes.map(n => n.verseId));
@@ -39,7 +44,15 @@ const ChapterDetailPage: React.FC = () => {
     (async () => {
       try {
         const verses = await loadChapter(chapterId);
-        const sorted = [...verses].sort((a, b) => a.order - b.order);
+        // 英文模式：用英文数据覆盖 keyPoint 等展示字段（缺失逐字段回退中文，原文共用）
+        const enList = lang === 'en' ? await loadChapterEn(chapterId) : [];
+        const enMap = new Map(enList.map(v => [v.id, v]));
+        const sorted = [...verses]
+          .map(v => {
+            const en = enMap.get(v.id);
+            return en ? { ...v, keyPoint: en.keyPoint || v.keyPoint } : v;
+          })
+          .sort((a, b) => a.order - b.order);
         if (!cancelled) {
           setChapterVerses(sorted);
           setLoading(false);
@@ -49,12 +62,12 @@ const ChapterDetailPage: React.FC = () => {
         if (!cancelled) {
           setLoading(false);
           setLoadFailed(true);
-          Taro.showToast({ title: '加载失败，请重试', icon: 'none', duration: 2000 });
+          Taro.showToast({ title: t('common.loadFailed'), icon: 'none', duration: 2000 });
         }
       }
     })();
     return () => { cancelled = true; };
-  }, [chapterId, retryTick]);
+  }, [chapterId, retryTick, lang]);
 
   const readCount = useMemo(() => {
     return chapterVerses.filter(v => readVerseIds.includes(v.id)).length;
@@ -66,30 +79,30 @@ const ChapterDetailPage: React.FC = () => {
 
   return (
     <ScrollView className={styles.container} scrollY enhanced bounces>
-      <BackHeader title="篇章详情" />
+      <BackHeader title={t('chapter.title')} />
       {/* 篇章头部 */}
       <View className={styles.chapterHeader}>
-        <Text className={styles.chapterTitle}>{chapter.title}</Text>
-        <Text className={styles.chapterTheme}>{chapter.theme}</Text>
-        <Text className={styles.chapterDesc}>{chapter.description}</Text>
+        <Text className={styles.chapterTitle}>{chapterTitle(chapter.id, chapter.title)}</Text>
+        <Text className={styles.chapterTheme}>{theme(chapter.theme)}</Text>
+        <Text className={styles.chapterDesc}>{chapterDescription(chapter.id, chapter.description)}</Text>
       </View>
 
       {/* 进度 */}
       {chapterVerses.length > 0 && (
-        <ProgressBar current={readCount} total={chapterVerses.length} label="本篇进度" />
+        <ProgressBar current={readCount} total={chapterVerses.length} label={t('chapter.progress')} />
       )}
 
       {/* 句子列表 */}
       <View className={styles.listTitle}>
-        <Text className={styles.listTitleText}>章句列表</Text>
-        <Text className={styles.listCount}>共{chapterVerses.length}章</Text>
+        <Text className={styles.listTitleText}>{t('chapter.verseList')}</Text>
+        <Text className={styles.listCount}>{t('chapter.countVerses', { n: chapterVerses.length })}</Text>
       </View>
       <View className={styles.verseList}>
         {loading ? (
-          <Text className={styles.emptyTip}>加载中...</Text>
+          <Text className={styles.emptyTip}>{t('chapter.loadingList')}</Text>
         ) : loadFailed ? (
           <View className={styles.loadFailedWrap}>
-            <Text className={styles.emptyTip}>加载失败，请检查网络</Text>
+            <Text className={styles.emptyTip}>{t('common.loadFailedNetwork')}</Text>
             <View
               className={styles.retryBtn}
               style={{ marginTop: 24 }}
@@ -98,7 +111,7 @@ const ChapterDetailPage: React.FC = () => {
                 setRetryTick(t => t + 1);
               }}
             >
-              <Text>重试</Text>
+              <Text>{t('common.retry')}</Text>
             </View>
           </View>
         ) : chapterVerses.length > 0 ? (
@@ -112,7 +125,7 @@ const ChapterDetailPage: React.FC = () => {
             />
           ))
         ) : (
-          <Text className={styles.emptyTip}>本篇内容正在整理中...</Text>
+          <Text className={styles.emptyTip}>{t('chapter.compiling')}</Text>
         )}
       </View>
     </ScrollView>
