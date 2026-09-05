@@ -33,7 +33,7 @@ const FONT_LABEL_KEYS = {
 const DATA_SOURCE_URL = 'https://mp.weixin.qq.com/mp/appmsgalbum?action=getalbum&__biz=MzUzNTkyNjQyMA==&scene=1&album_id=1337086542606696448&count=3#wechat_redirect';
 
 const SettingsPage: React.FC = () => {
-  const { t, lang, setLang } = useI18n();
+  const { t, setLang } = useI18n();
   const [settings, setSettings] = useState<AppSettings>(() => getSettings());
   const [user, setUser] = useState<UserInfo | null>(() => getUserInfo());
   const [showClearConfirm, setShowClearConfirm] = useState(false);

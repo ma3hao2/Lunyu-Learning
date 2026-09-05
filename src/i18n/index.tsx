@@ -1,8 +1,8 @@
 // 语言上下文：全局由 App 内 Provider 注入；无 Provider 时（测试/服务层直调）回退直读设置存储
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import Taro from '@tarojs/taro';
 import type { ReactNode } from 'react';
-import type { ChapterEn, Language, Verse, VerseEn } from '@/types';
+import type { Language, Verse, VerseEn } from '@/types';
 import { getSettings, saveLanguage } from '@/utils/settings';
 import { chaptersEn } from '@/data/chaptersEn';
 import { translate, themeLabel } from './messages';

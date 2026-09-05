@@ -15,10 +15,12 @@ import {
   type SearchResult
 } from '@/services/search';
 import { renderHighlighted } from '@/utils/highlight';
+import { useI18n } from '@/i18n';
 
 const PAGE_SIZE = 20; // 下滑加载每页条数
 
 const ClassicsPage: React.FC = () => {
+  const { t, theme: themeOf } = useI18n();
   const [searchText, setSearchText] = useState('');
   const [activeTheme, setActiveTheme] = useState('全部');
   const [readVerseIds, setReadVerseIds] = useState<number[]>([]);
@@ -35,6 +37,8 @@ const ClassicsPage: React.FC = () => {
   const debouncedSearchText = useDebounce(searchText, 300);
 
   useDidShow(() => {
+    // 导航栏标题随语言刷新（tab 页标题走原生导航栏）
+    Taro.setNavigationBarTitle({ title: t('tab.classics') });
     const progress = getProgress();
     setReadVerseIds(progress.readVerseIds);
   });
@@ -140,8 +144,8 @@ const ClassicsPage: React.FC = () => {
     <ScrollView className={styles.container} scrollY enhanced bounces>
       {/* 简介 */}
       <View className={styles.introCard}>
-        <Text className={styles.introTitle}>论语二十篇</Text>
-        <Text className={styles.introText}>儒家经典，孔子弟子及再传弟子编纂，记录孔子及其弟子言行，共二十篇，蕴含修身齐家治国之大道。</Text>
+        <Text className={styles.introTitle}>{t('classics.title')}</Text>
+        <Text className={styles.introText}>{t('classics.desc')}</Text>
       </View>
 
       {/* 搜索模式切换 */}
@@ -150,9 +154,9 @@ const ClassicsPage: React.FC = () => {
           className={classnames(styles.modeTab, styles.modeTabActive)}
           onClick={handleFocusSearch}
         >
-          搜原文
+          {t('classics.tabOriginal')}
         </Text>
-        <Text className={styles.modeTab} onClick={handleOpenDeepSearch}>搜译文/注释 ›</Text>
+        <Text className={styles.modeTab} onClick={handleOpenDeepSearch}>{t('classics.tabDeep')}</Text>
       </View>
 
       {/* 搜索栏 */}
@@ -160,7 +164,7 @@ const ClassicsPage: React.FC = () => {
         <Text className={styles.searchIcon}>搜</Text>
         <Input
           className={styles.searchInput}
-          placeholder="搜索原文..."
+          placeholder={t('classics.searchPlaceholder')}
           value={searchText}
           onInput={handleSearchInput}
           confirmType="search"
@@ -175,7 +179,7 @@ const ClassicsPage: React.FC = () => {
       {isSearching && (
         <View className={styles.searchStats}>
           <Text className={styles.searchStatsText}>
-            找到 {totalVerseMatches} 条章句、{filteredChapters.length} 篇篇章
+            {t('classics.found', { verses: totalVerseMatches, chapters: filteredChapters.length })}
           </Text>
         </View>
       )}
@@ -184,8 +188,8 @@ const ClassicsPage: React.FC = () => {
       {isSearching && allResults.length > 0 && (
         <View className={styles.verseSection}>
           <View className={styles.sectionTitleRow}>
-            <Text className={styles.sectionTitle}>匹配章句</Text>
-            <Text className={styles.sectionCount}>共{totalVerseMatches}条</Text>
+            <Text className={styles.sectionTitle}>{t('classics.matchedVerses')}</Text>
+            <Text className={styles.sectionCount}>{t('classics.countVerses', { n: totalVerseMatches })}</Text>
           </View>
           {allResults.slice(0, displayCount).map(result => {
             const chapter = chapterMap.get(result.chapterId);
@@ -224,8 +228,8 @@ const ClassicsPage: React.FC = () => {
               onClick={allResults.length > displayCount ? handleShowAll : undefined}
             >
               {allResults.length > displayCount
-                ? `点击显示全部（共 ${allResults.length} 条，已显示 ${displayCount} 条）`
-                : `已全部加载，共 ${allResults.length} 条`}
+                ? t('common.showAllMore', { total: allResults.length, shown: displayCount })
+                : t('common.showAllDone', { total: allResults.length })}
             </View>
           )}
         </View>
@@ -240,7 +244,7 @@ const ClassicsPage: React.FC = () => {
               className={classnames(styles.tagItem, activeTheme === theme && styles.active)}
               onClick={() => setActiveTheme(theme)}
             >
-              <Text>{theme}</Text>
+              <Text>{theme === '全部' ? t('classics.all') : themeOf(theme)}</Text>
             </View>
           ))}
         </ScrollView>
@@ -250,8 +254,8 @@ const ClassicsPage: React.FC = () => {
       {showChapterList && (
         <>
           <View className={styles.listHeader}>
-            <Text className={styles.listTitle}>{isSearching ? '匹配篇章' : '篇目列表'}</Text>
-            <Text className={styles.listCount}>共{filteredChapters.length}篇</Text>
+            <Text className={styles.listTitle}>{isSearching ? t('classics.matchedChapters') : t('classics.chapterList')}</Text>
+            <Text className={styles.listCount}>{t('classics.countChapters', { n: filteredChapters.length })}</Text>
           </View>
           <View className={styles.chapterList}>
             {filteredChapters.map(chapter => (
@@ -267,7 +271,7 @@ const ClassicsPage: React.FC = () => {
       )}
 
       {isSearching && filteredChapters.length === 0 && allResults.length === 0 && (
-        <Text className={styles.emptyTip}>未找到匹配内容，试试其他关键词</Text>
+        <Text className={styles.emptyTip}>{t('classics.empty')}</Text>
       )}
     </ScrollView>
   );

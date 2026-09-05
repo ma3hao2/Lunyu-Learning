@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import Taro from '@tarojs/taro';
 import { CLOUD_ENV } from '@/config/cloud';
 import { silentLoginAndMerge } from '@/services/auth';

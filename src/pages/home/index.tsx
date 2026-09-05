@@ -8,8 +8,10 @@ import { versesIndex, type VerseIndex } from '@/data/versesIndex';
 import { chapters } from '@/data/chapters';
 import { getTodayRecommend } from '@/data/dailyRecommend';
 import { getProgress } from '@/utils/storage';
+import { useI18n } from '@/i18n';
 
 const HomePage: React.FC = () => {
+  const { t, theme, chapterTitle } = useI18n();
   const [readCount, setReadCount] = useState(0);
   const [totalReadDays, setTotalReadDays] = useState(1);
   const [noteCount, setNoteCount] = useState(() => getProgress().myNotes.length);
@@ -27,6 +29,8 @@ const HomePage: React.FC = () => {
   }, []);
 
   useDidShow(() => {
+    // 导航栏标题随语言刷新（tab 页标题走原生导航栏）
+    Taro.setNavigationBarTitle({ title: t('app.brand') });
     refreshProgress();
     // 每次进入首页轮换经典名句
     setClassicVerses(pickRandomVerses());
@@ -108,23 +112,23 @@ const HomePage: React.FC = () => {
     <ScrollView className={styles.container} scrollY enhanced bounces>
       {/* 顶部标题 */}
       <View className={styles.header}>
-        <Text className={styles.appTitle}>论语学习</Text>
-        <Text className={styles.appSubtitle}>学而时习之，不亦说乎</Text>
+        <Text className={styles.appTitle}>{t('app.brand')}</Text>
+        <Text className={styles.appSubtitle}>{t('app.subtitle')}</Text>
       </View>
 
       {/* 搜索入口（P2-1：最常驻页面提供搜索） */}
       <View className={styles.searchBar} onClick={handleOpenSearch}>
         <Text className={styles.searchIcon}>搜</Text>
-        <Text className={styles.searchPlaceholder}>搜索译文、注释...（支持全库搜索）</Text>
+        <Text className={styles.searchPlaceholder}>{t('home.searchPlaceholder')}</Text>
       </View>
 
       {/* 今日推荐 */}
       <View className={styles.dailyCard} onClick={handleDailyClick}>
         <View className={styles.dailyLabel}>
           <Text className={styles.dailyLabelIcon}>日</Text>
-          <Text className={styles.dailyLabelText}>今日推荐</Text>
+          <Text className={styles.dailyLabelText}>{t('home.daily')}</Text>
           {/* 主题标签（方案 E：按主题轮换，20 篇 20 天一轮） */}
-          <Text className={styles.dailyTag}>{dailyRecommend.theme}</Text>
+          <Text className={styles.dailyTag}>{theme(dailyRecommend.theme)}</Text>
         </View>
         {dailyVerse ? (
           <Text className={styles.dailyOriginal}>{dailyVerse.original}</Text>
@@ -135,10 +139,10 @@ const HomePage: React.FC = () => {
             <Skeleton height="44rpx" width="70%" style={{ marginTop: '16rpx' }} />
           </View>
         )}
-        <Text className={styles.dailyChapter}>{dailyRecommend.chapterTitle}</Text>
+        <Text className={styles.dailyChapter}>{chapterTitle(dailyRecommend.chapterId, dailyRecommend.chapterTitle)}</Text>
         <View className={styles.dailyActions}>
           <View className={styles.dailyBtn} onClick={(e) => { e.stopPropagation(); handleDailyClick(); }}>
-            <Text className={styles.dailyBtnText}>开始学习 ›</Text>
+            <Text className={styles.dailyBtnText}>{t('home.start')}</Text>
           </View>
         </View>
       </View>
@@ -148,42 +152,42 @@ const HomePage: React.FC = () => {
         <View className={styles.continueCard} onClick={handleContinueRead}>
           <View className={styles.dailyLabel}>
             <Text className={styles.dailyLabelIcon}>续</Text>
-            <Text className={styles.dailyLabelText}>继续学习</Text>
+            <Text className={styles.dailyLabelText}>{t('home.continue')}</Text>
           </View>
           <Text className={styles.dailyOriginal} numberOfLines={2}>{lastReadVerse.original}</Text>
           <View className={styles.dailyBtn}>
-            <Text className={styles.dailyBtnText}>{lastReadVerse.chapterTitle} · {lastReadVerse.chapterId}-{lastReadVerse.order} ›</Text>
+            <Text className={styles.dailyBtnText}>{chapterTitle(lastReadVerse.chapterId, lastReadVerse.chapterTitle)} · {lastReadVerse.chapterId}-{lastReadVerse.order} ›</Text>
           </View>
         </View>
       )}
 
       {/* 学习进度 */}
       <View className={styles.progressSection}>
-        <Text className={styles.progressTitle}>学习进度</Text>
+        <Text className={styles.progressTitle}>{t('home.progress')}</Text>
         <View className={styles.statsRow}>
           <View className={styles.statItem}>
             <Text className={styles.statNumber}>{readCount}</Text>
-            <Text className={styles.statLabel}>已读章句</Text>
+            <Text className={styles.statLabel}>{t('home.statVerses')}</Text>
           </View>
           <View className={styles.statItem}>
             <Text className={styles.statNumber}>{readChapters}</Text>
-            <Text className={styles.statLabel}>已读篇目</Text>
+            <Text className={styles.statLabel}>{t('home.statChapters')}</Text>
           </View>
           <View className={styles.statItem}>
             <Text className={styles.statNumber}>{readCount === 0 ? 0 : totalReadDays} 🔥</Text>
-            <Text className={styles.statLabel}>连续学习</Text>
+            <Text className={styles.statLabel}>{t('home.statStreak')}</Text>
           </View>
           <View className={styles.statItem}>
             <Text className={styles.statNumber}>{noteCount}</Text>
-            <Text className={styles.statLabel}>我的笔记</Text>
+            <Text className={styles.statLabel}>{t('home.statNotes')}</Text>
           </View>
         </View>
-        <ProgressBar current={readCount} total={totalVerses} label="总进度" />
+        <ProgressBar current={readCount} total={totalVerses} label={t('home.totalProgress')} />
       </View>
 
       {/* 快捷入口 */}
       <View className={styles.sectionTitle}>
-        <Text className={styles.sectionTitleText}>快捷入口</Text>
+        <Text className={styles.sectionTitleText}>{t('home.quickLinks')}</Text>
       </View>
       <View className={styles.quickGrid}>
         <View className={styles.quickItem} onClick={() => handleNavigate('/pages/classics/index')}>
@@ -191,8 +195,8 @@ const HomePage: React.FC = () => {
             <Text className={styles.quickIconText}>书</Text>
           </View>
           <View className={styles.quickInfo}>
-            <Text className={styles.quickName}>篇章阅读</Text>
-            <Text className={styles.quickDesc}>二十篇全文</Text>
+            <Text className={styles.quickName}>{t('home.qReading')}</Text>
+            <Text className={styles.quickDesc}>{t('home.qReadingDesc')}</Text>
           </View>
         </View>
         <View className={styles.quickItem} onClick={() => handleNavigate('/pages/insights/index')}>
@@ -200,8 +204,8 @@ const HomePage: React.FC = () => {
             <Text className={styles.quickIconText}>记</Text>
           </View>
           <View className={styles.quickInfo}>
-            <Text className={styles.quickName}>我的笔记</Text>
-            <Text className={styles.quickDesc}>学习感悟记录</Text>
+            <Text className={styles.quickName}>{t('home.qNotes')}</Text>
+            <Text className={styles.quickDesc}>{t('home.qNotesDesc')}</Text>
           </View>
         </View>
         <View className={styles.quickItem} onClick={() => handleNavigate('/pages/mine/index')}>
@@ -209,8 +213,8 @@ const HomePage: React.FC = () => {
             <Text className={styles.quickIconText}>人</Text>
           </View>
           <View className={styles.quickInfo}>
-            <Text className={styles.quickName}>个人中心</Text>
-            <Text className={styles.quickDesc}>学习数据</Text>
+            <Text className={styles.quickName}>{t('home.qMine')}</Text>
+            <Text className={styles.quickDesc}>{t('home.qMineDesc')}</Text>
           </View>
         </View>
         <View className={styles.quickItem} onClick={() => Taro.navigateTo({ url: '/pages/settings/index' })}>
@@ -218,16 +222,16 @@ const HomePage: React.FC = () => {
             <Text className={styles.quickIconText}>设</Text>
           </View>
           <View className={styles.quickInfo}>
-            <Text className={styles.quickName}>设置</Text>
-            <Text className={styles.quickDesc}>数据管理</Text>
+            <Text className={styles.quickName}>{t('home.qSettings')}</Text>
+            <Text className={styles.quickDesc}>{t('home.qSettingsDesc')}</Text>
           </View>
         </View>
       </View>
 
       {/* 经典名句 */}
       <View className={styles.sectionTitle}>
-        <Text className={styles.sectionTitleText}>经典名句</Text>
-        <Text className={styles.sectionMore} onClick={handleMoreClassics}>查看全部 ›</Text>
+        <Text className={styles.sectionTitleText}>{t('home.classics')}</Text>
+        <Text className={styles.sectionMore} onClick={handleMoreClassics}>{t('common.viewAll')}</Text>
       </View>
       <View className={styles.classicList}>
         {classicVerses.map(verse => (

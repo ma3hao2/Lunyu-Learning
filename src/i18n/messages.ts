@@ -47,6 +47,7 @@ export const messages = {
   'home.statChapters': { zh: '已读篇目', en: 'Books Opened' },
   'home.statStreak': { zh: '连续学习', en: 'Day Streak' },
   'home.statNotes': { zh: '我的笔记', en: 'My Notes' },
+  'home.totalProgress': { zh: '总进度', en: 'Overall' },
   'home.quickLinks': { zh: '快捷入口', en: 'Quick Links' },
   'home.qReading': { zh: '篇章阅读', en: 'Browse Books' },
   'home.qReadingDesc': { zh: '二十篇全文', en: 'All twenty books' },

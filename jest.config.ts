@@ -16,7 +16,7 @@ const config: Config = {
         ...require('./tsconfig.json').compilerOptions,
         module: 'commonjs',
         target: 'es2019',
-        jsx: 'react',
+        jsx: 'react-jsx',
         esModuleInterop: true,
         noUnusedLocals: false,
         noUnusedParameters: false

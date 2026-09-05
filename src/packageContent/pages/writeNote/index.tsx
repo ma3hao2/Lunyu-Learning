@@ -123,14 +123,11 @@ const WriteNotePage: React.FC = () => {
     setSubmitting(true);
 
     // 本地保存（笔记仅存本机，登录与否均可写）
-    let savedNoteId: number;
     try {
       if (isEditing && noteId !== null) {
         updateNote(noteId, text, selectedTags);
-        savedNoteId = noteId;
       } else {
-        const progress = addNote(verseId, text, selectedTags);
-        savedNoteId = progress.myNotes[0].id;
+        addNote(verseId, text, selectedTags);
       }
     } catch (e: any) {
       console.error('[WriteNote] 本地保存失败:', e);
