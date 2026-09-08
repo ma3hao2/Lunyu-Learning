@@ -3,7 +3,7 @@
   "cloudfunctionRoot": "cloudfunctions/",
   "projectname": "lunyu-miniapp",
   "description": "论语学习小程序",
-  "appid": "touristappid",
+  "appid": "wx1d17bbdd182f2b02",
   "setting": {
     "urlCheck": true,
     "es6": false,

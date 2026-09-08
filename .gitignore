@@ -53,6 +53,11 @@ coverage/
 # 桌面版依赖与构建产物（desktop/main.js 等源码入库）
 desktop/node_modules/
 desktop/release/
+desktop/release2/
+desktop/release3/
+
+# Python 缓存（scripts 工具运行产物，不入库）
+__pycache__/
 
 # 发布产物安装包（exe/APK，体积大不入库）
 docs/release/
