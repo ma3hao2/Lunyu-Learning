@@ -4,9 +4,11 @@
 
 > 学而时习之，不亦说乎
 
-**《论语》二十篇 · 509 章句精读 · 中英双语 · 微信小程序 / Windows / 安卓三端同源**
+**《论语》二十篇 · 509 章句精读 · 中英双语 · 微信小程序 / 网页 / Windows / 安卓**
 
 [![Tests](https://img.shields.io/badge/tests-257%20passing-brightgreen)](#) [![License](https://img.shields.io/badge/license-MIT-blue)](./LICENSE) [![Release](https://img.shields.io/badge/download-v1.1.0-orange)](https://github.com/ma3hao2/Lunyu-Learning/releases/latest)
+
+🌍 **[在线网页版：lunyu5673.com](https://lunyu5673.com)** —— 浏览器打开即用，无需安装
 
 </div>
 
@@ -24,6 +26,7 @@
 
 | 平台 | 下载 | 说明 |
 |---|---|---|
+| **网页版** | [lunyu5673.com](https://lunyu5673.com) | 浏览器直接使用，无需安装 |
 | **Windows** | [安装版 Setup](https://github.com/ma3hao2/Lunyu-Learning/releases/download/v1.1.0/LunYu-Setup-1.1.0-x64.exe) ｜ [免安装 Portable](https://github.com/ma3hao2/Lunyu-Learning/releases/download/v1.1.0/LunYu-Portable-1.1.0-x64.exe) | 64 位，解压即用或双击安装 |
 | **安卓** | [APK 安装包](https://github.com/ma3hao2/Lunyu-Learning/releases/download/v1.1.0/LunYu-v1.1.0-android.apk) | 需允许「安装未知来源应用」 |
 | **微信小程序** | 微信内搜索「论语学习」 | 无需安装，登录后进度云端互通 |
@@ -61,6 +64,8 @@
 
 > [!NOTE]
 > Taro 构建会清空输出目录，因此 weapp 与 h5 输出按端分离（`dist/` 与 `dist-h5/`），互不覆盖。微信开发者工具预览前只需保证跑过 `build:weapp`。
+
+> 在线网页版（[lunyu5673.com](https://lunyu5673.com)）来自姊妹项目 [`lunyu-web`](../lunyu-web)（React SPA），是英文章句数据的源头；本仓库的英文数据即从它反向同步。
 
 ## 🧰 技术栈
 
