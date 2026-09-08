@@ -8,7 +8,7 @@
 
 ## 项目约定
 - Taro 4 + React 18 + TypeScript；jest 测试
-- 修改代码后必须跑 npm test（全量 256 用例）
+- 修改代码后必须跑 npm test（全量 257 用例）
 - 提审前还原 appid；云环境用 cloud.local.ts
 - project.config.json 必须保持 uploadWithSourceMap=false：新版开发者工具会把上传时现场生成的 source map 计入包体积（实测 1.8MB 源码被算成 9.3MB 假超标）；Taro 产物已压缩，无需 IDE map
 - 构建输出已按端分离：weapp→dist/、h5→dist-h5/，两端互不覆盖
